@@ -1,3 +1,6 @@
+from datetime import datetime
+import pytz
+
 from .carts_repository import CartsRepository
 from app.db import mongo
 from ..products.products_repository import ProductsRepository
@@ -17,7 +20,6 @@ class CartsService:
         self.user_repository = user_repository or UserRepository()
 
     def list_cart(self, user_id):
-
         try:
             user = self.user_repository.get_user_by_id(user_id)
 
@@ -36,8 +38,8 @@ class CartsService:
                     role="user", product_id=item["product_id"]
                 )
 
-                if product_detail is None:
-                    continue
+                if not product_detail:
+                    raise ValueError(f"Product {item['product_id']} not found")
 
                 sub_total = product_detail.price * item["quantity"]
 
@@ -64,11 +66,18 @@ class CartsService:
 
             user_id = identity.get("id")
             items = data.get("items")
-
             user_cart = self.repository.find_cart_by_user_id(user_id)
 
-            if user_cart:
-                for item in items:
+            for item in items:
+                if item["quantity"] <= 0:
+                    raise ValueError("Quantity must be greater than 0")
+
+            for item in items:
+                if user_cart:
+                    # check is product exist in products table, if not raise error
+                    self.check_product(product_id=item["product_id"])
+
+                    # check if user already have specific product in cart
                     is_exist = self.repository.find_one(
                         user_id=user_id, product_id=item["product_id"]
                     )
@@ -80,13 +89,16 @@ class CartsService:
                             quantity=item["quantity"],
                         )
                     else:
-                        self.repository.update_new(
-                            user_id=user_id,
-                            product_id=item["product_id"],
-                            quantity=item["quantity"],
-                        )
-            else:
-                self.repository.insert_cart(user_id, items)
+                        item["added_to_cart"] = str(datetime.now(pytz.UTC))
+
+                        self.repository.update_new(user_id=user_id, items=item)
+                else:
+                    self.check_product(product_id=item["product_id"])
+                    item["added_to_cart"] = str(datetime.now(pytz.UTC))
+
+                    user_cart = True
+
+                    self.repository.insert_cart(user_id, item)
 
             return {"message": "Cart created/updated successfully"}, 200
         except ValueError as e:
@@ -112,3 +124,13 @@ class CartsService:
             return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
+
+    def check_product(self, product_id):
+        product = self.product_repository.get_product_by_id(
+            role="user", product_id=product_id
+        )
+
+        if not product:
+            raise ValueError("Product not found")
+
+        return product

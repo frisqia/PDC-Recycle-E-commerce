@@ -10,7 +10,7 @@ class CartsRepository:
 
     def insert_cart(self, user_id, items):
         return self.collection.db.carts.update_one(
-            {"_id": user_id}, {"$set": {"items": items}}, upsert=True
+            {"_id": user_id}, {"$set": {"items": [items]}}, upsert=True
         )
 
     def find_one(self, user_id, product_id):
@@ -24,10 +24,10 @@ class CartsRepository:
             {"$set": {"items.$.quantity": quantity}},
         )
 
-    def update_new(self, user_id, product_id, quantity):
+    def update_new(self, user_id, items):
         self.collection.db.carts.update_one(
             {"_id": user_id},
-            {"$push": {"items": {"product_id": product_id, "quantity": quantity}}},
+            {"$push": {"items": items}},
         )
 
     def delete_one(self, user_id, product_id):
