@@ -23,7 +23,7 @@ class Categories(db.Model):
     created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
 
-    products = relationship("Products", backref="category")
+    products = relationship("Products", backref="category_products")
 
     def __init__(self, category_name):
         self.category_name = category_name
