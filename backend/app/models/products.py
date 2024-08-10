@@ -114,8 +114,10 @@ class Products(db.Model):
             "stock": self.stock,
             "image_url": self.image_url,
             "category_id": self.category_id,
+            "category_name": self.category_products.category_name,
             "is_active": self.is_active,
-            "seller_id": self.seller_id,
+            "seller_id": self.seller_products.id,
+            "store_name": self.seller_products.store_name,
         }
 
     def upload_image(self):
