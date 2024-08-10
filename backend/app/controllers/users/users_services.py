@@ -19,11 +19,11 @@ class UserServices:
 
             user = self.repository.get_user_by_email(user_data["email"])
 
-            if user.is_active == 0:
-                raise ValueError("Account is Inactive. Please contact customer service")
-
             if user is None or not user.check_password(user_data["password"]):
                 raise ValueError("Invalid Email / Password")
+
+            if user.is_active == 0:
+                raise ValueError("Account is Inactive. Please contact customer service")
 
             access_token = create_access_token(identity={"id": user.id, "role": "user"})
 
