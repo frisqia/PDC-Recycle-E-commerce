@@ -18,7 +18,6 @@ class AddressesService:
                 address_line=str,
                 province_id=int,
                 district_id=int,
-                subdistrict_id=int,
                 postal_code=str,
             )
 
@@ -58,7 +57,6 @@ class AddressesService:
                 address_line=str,
                 province_id=int,
                 district_id=int,
-                subdistrict_id=int,
                 rt_rw=str,
                 postal_code=str,
             )

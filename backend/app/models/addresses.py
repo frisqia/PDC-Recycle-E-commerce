@@ -48,7 +48,6 @@ class Addresses(db.Model):
         address_line,
         province_id,
         district_id,
-        subdistrict_id,
         postal_code,
         rt_rw,
         user_id,
@@ -60,7 +59,6 @@ class Addresses(db.Model):
         self.address_line = address_line
         self.province_id = province_id
         self.district_id = district_id
-        self.subdistrict_id = subdistrict_id
         self.postal_code = postal_code
         self.rt_rw = rt_rw
         self.user_id = user_id
@@ -75,7 +73,6 @@ class Addresses(db.Model):
             "address_line": self.address_line,
             "province_id": self.province_id,
             "district_id": self.district_id,
-            "subdistrict_id": self.subdistrict_id,
             "province_name": self.province_addresses.province,
             "district_name": self.district_addresses.district,
             "subdistrict_name": self.subdistrict_addresses.subdistrict,
