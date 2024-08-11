@@ -28,8 +28,18 @@ class AddressesService:
             data["rt_rw"] = rt_rw if rt_rw else "000/000"
 
             if identity.get("role") == "seller":
+                role_id = identity.get("id")
+                role = identity.get("role")
+
+                if (
+                    len(self.repository.get_list_address(role_id=role_id, role=role))
+                    > 0
+                ):
+                    raise ValueError("Seller can only have one address")
+
                 data["seller_id"] = identity.get("id")
                 data["user_id"] = None
+
             if identity.get("role") == "user":
                 data["user_id"] = identity.get("id")
                 data["seller_id"] = None
