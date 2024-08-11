@@ -88,7 +88,7 @@ class UserServices:
         try:
             user = self.repository.get_user_by_id(user_id)
 
-            return {"user": user.to_dict()}
+            return {"user": user.to_dict()}, 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:

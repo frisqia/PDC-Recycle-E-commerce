@@ -19,8 +19,9 @@ from .controllers.user_seller_vouchers import user_seller_vouchers_blueprint
 from .controllers.carts import carts_blueprint
 from .controllers.shipping_options import shipping_options_blueprint
 from .controllers.shipments import shipments_blueprint
+from .controllers.calculators import calculators_blueprint
 
-load_dotenv()
+load_dotenv(override=True)
 migrate = Migrate()
 jwt = JWTManager()
 
@@ -53,6 +54,7 @@ def create_app():
     app.register_blueprint(carts_blueprint)
     app.register_blueprint(shipping_options_blueprint)
     app.register_blueprint(shipments_blueprint)
+    app.register_blueprint(calculators_blueprint)
 
     db.init_app(app)
     mongo.init_app(app)

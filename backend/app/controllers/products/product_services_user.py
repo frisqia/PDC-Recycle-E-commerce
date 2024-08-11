@@ -54,6 +54,21 @@ class ProductServicesUser:
         except Exception as e:
             return {"error": str(e)}, 500
 
+    def get_product_by_id(self, product_id):
+        try:
+            product = self.repository.get_product_by_id(
+                role="user", product_id=product_id
+            )
+
+            if not product:
+                raise ValueError("Product not found")
+
+            return product.to_dict(), 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+
     def response(self, products):
         return {
             "products": [product.to_dict() for product in products],

@@ -89,7 +89,7 @@ class SellersServices:
             if not seller:
                 raise ValueError("Seller not found")
 
-            return {"seller": seller.to_dict()}
+            return {"seller": seller.to_dict()}, 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:

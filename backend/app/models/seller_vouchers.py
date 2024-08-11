@@ -5,7 +5,6 @@ from sqlalchemy import (
     SmallInteger,
     DateTime,
     VARCHAR,
-    event,
 )
 from sqlalchemy.orm import relationship
 from enum import Enum
@@ -47,8 +46,10 @@ class SellerVouchers(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "seller_id": self.seller_id,
             "title": self.title,
             "discount_type": self.discount_type,
+            "discount_type_name": Discount_Type(self.discount_type).name,
             "percentage": self.percentage,
             "min_purchase_amount": self.min_purchase_amount,
             "max_discount_amount": self.max_discount_amount,

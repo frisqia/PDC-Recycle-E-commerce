@@ -102,6 +102,24 @@ class UserSellerVouchersService:
             self.db.session.rollback()
             return {"error": str(e)}, 500
 
+    def user_voucher_details(self, identity, user_seller_voucher_id):
+        try:
+            self.check_user(identity=identity)
+
+            user_id = identity.get("id")
+            voucher = self.repository.get_voucher_by_id(
+                user_seller_voucher_id=user_seller_voucher_id, user_id=user_id
+            )
+
+            if not voucher:
+                raise ValueError("Voucher not found")
+
+            return voucher.to_dict(), 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+
     def check_user(self, identity):
         user_id = identity.get("id")
         role = identity.get("role")
