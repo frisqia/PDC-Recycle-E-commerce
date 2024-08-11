@@ -75,7 +75,6 @@ class Addresses(db.Model):
             "district_id": self.district_id,
             "province_name": self.province_addresses.province,
             "district_name": self.district_addresses.district,
-            "subdistrict_name": self.subdistrict_addresses.subdistrict,
             "rt_rw": self.rt_rw,
             "postal_code": self.postal_code,
             "is_active": self.is_active,
