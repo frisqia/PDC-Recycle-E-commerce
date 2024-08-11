@@ -46,12 +46,6 @@ responses:
                     district_name:
                         type: string
                         example: "Denpasar"
-                    subdistrict_id:
-                        type: integer
-                        example: 1
-                    subdistrict_name:
-                        type: string
-                        example: "Denpasar Timur"
                     rt_rw:
                         type: string
                         example: "001/001"

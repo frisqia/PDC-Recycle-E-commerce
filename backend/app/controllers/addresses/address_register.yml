@@ -31,13 +31,10 @@ parameters:
                   example: "Jl. Denpasar"
               province_id:
                   type: integer
-                  example: 51
+                  example: 1
               district_id:
                   type: integer
-                  example: 5101
-              subdistrict_id:
-                  type: integer
-                  example: 510101
+                  example: 114
               postal_code:
                   type: string
                   example: "16151"
