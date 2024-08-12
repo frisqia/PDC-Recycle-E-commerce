@@ -1,6 +1,6 @@
 import asyncio
 
-from ..users.users_repository import UserRepository
+from ..users.users_services import UserServices
 
 from .voucher_service import VoucherService
 from .product_service import ProductService
@@ -10,12 +10,12 @@ from .shipment_service import ShipmentService
 class CalculatorsService:
     def __init__(
         self,
-        user_repository=None,
+        user_service=None,
         voucher_service=None,
         product_service=None,
         shipment_service=None,
     ):
-        self.user_repository = user_repository or UserRepository()
+        self.user_service = user_service or UserServices()
         self.voucher_service = voucher_service or VoucherService()
         self.product_service = product_service or ProductService()
         self.shipment_service = shipment_service or ShipmentService()
@@ -49,7 +49,7 @@ class CalculatorsService:
             carts = data.get("carts")
             user_id = identity.get("id")
             role = identity.get("role")
-            user_selected_address_id = data.get("user_selected_address_id")
+            user_selected_address_id = data.get("user_selected_address_id", None)
             selected_voucher = data.get("selected_user_voucher_ids", [])
             selected_courier = data.get("selected_courier", None)
 
@@ -75,6 +75,9 @@ class CalculatorsService:
 
             # Calculated shipment fee
             if selected_courier:
+                if not user_selected_address_id:
+                    raise ValueError("user_selected_address_id is required")
+
                 calculated_shipment_fee = self.calculate_shipment_fee(
                     identity=identity,
                     user_selected_address_id=user_selected_address_id,
@@ -121,7 +124,7 @@ class CalculatorsService:
         if not carts:
             raise ValueError("No items in cart")
 
-        if not self.user_repository.get_user_by_id(user_id):
+        if not self.user_service.user_info(user_id=user_id):
             raise ValueError("User not found")
 
     def calculate_shipment_fee(
