@@ -1,4 +1,3 @@
-from flask import request, jsonify
 import asyncio
 
 from ..users.users_repository import UserRepository
@@ -36,10 +35,14 @@ class CalculatorsService:
         selected_user_voucher_ids: [1, 3, 5],
         user_selected_address_id: 2,
         selected_courier:
-        {
-            "3" : {"jne" : "CTCYES"},
-            "4" : {"jne" : "CTCYES"}
-        }
+        [
+            { "seller_id" : 3,
+              "selected_courier": "jne",
+              "selected_service": "CTCYES"},
+            { "seller_id" : 4,
+              "selected_courier": "jne",
+              "selected_service": "CTCYES"}
+        ]
         """
 
         try:
@@ -88,7 +91,7 @@ class CalculatorsService:
                 calculated_product_detail=calculated_product_detail
             )
 
-            return final_calculation
+            return final_calculation, 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
@@ -134,11 +137,12 @@ class CalculatorsService:
 
         all_shipment_fee = {}
 
-        for seller_id, courier in selected_courier.items():
+        for courier in selected_courier:
+            seller_id = courier["seller_id"]
             seller_district = self.shipment_service.get_seller_address(
                 seller_id=seller_id
             )["district_id"]
-            courier_vendor = list(courier.keys())[0]
+            courier_vendor = courier["selected_courier"]
 
             shipment_option = asyncio.run(
                 self.shipment_service.get_possible_shipment_option(
@@ -152,7 +156,7 @@ class CalculatorsService:
             )
 
             for data in shipment_option.get(courier_vendor):
-                if data["service"] == courier.get(courier_vendor):
+                if data["service"] == courier["selected_service"]:
                     all_shipment_fee[seller_id] = data["cost"]
 
         return all_shipment_fee

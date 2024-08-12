@@ -20,13 +20,13 @@ class ShipmentService:
         """
         { "seller_id" : 2,
           "user_selected_address_id" : 2,
-          "total_weight" : 2,}
+          "total_weight" : 2}
         """
 
         try:
             seller_id = data.get("seller_id")
             user_selected_address_id = data.get("user_selected_address_id")
-            total_weight = data.get("total_weight")
+            total_weight = data.get("total_weight_gram")
 
             self.check_user(identity)
             self.check_seller(seller_id)
@@ -94,18 +94,19 @@ class ShipmentService:
         params["courier"] = courier
         async with session.post(link, data=params) as response:
             if response.status != 200:
-                description = response.json()["rajaongkir"]["status"]["description"]
+                response_data = await response.json()
+                description = response_data["rajaongkir"]["status"]["description"]
                 raise Exception(description)
 
             data = await response.json()
-            return data["rajaongkir"]["results"][0]["costs"]
+            return data.get("rajaongkir").get("results")[0].get("costs")
 
     async def get_possible_shipment_option(
         self, user_district, seller_district, total_weight, courier=None
     ):
         link = os.getenv("RAJAONGKIR_LINK")
         key = os.getenv("RAJAONGKIR_KEY")
-        available_courier = [courier] if courier else ["jne", "pos", "tiki"]
+        available_courier = [courier] if courier else ["pos", "jne", "tiki"]
         params = {
             "key": key,
             "origin": user_district,
@@ -121,9 +122,9 @@ class ShipmentService:
                 for each_courier in available_courier
             ]
 
-            result = await asyncio.gather(*tasks, return_exceptions=True)
+            results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            for courier, result in zip(available_courier, result):
+            for courier, result in zip(available_courier, results):
                 if isinstance(result, Exception):
                     raise Exception(f"Error fetching options for {courier}: {result}")
                 else:
