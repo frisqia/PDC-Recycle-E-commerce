@@ -113,8 +113,6 @@ class SellersServices:
             **{
                 "store_name": str,
                 "store_description": str,
-                "store_address": str,
-                "store_subdistrict": int,
                 "store_image_url": str,
             },
         )

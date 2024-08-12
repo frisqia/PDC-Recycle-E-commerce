@@ -23,12 +23,6 @@ parameters:
               store_description:
                   type: string
                   example: Jual bahan pangan
-              store_address:
-                  type: string
-                  example: Jl. Ida Bagus Mantra no.1
-              store_subdistrict:
-                  type: integer
-                  example: 1
               store_image_url:
                   type: string
                   example: https://image.com
