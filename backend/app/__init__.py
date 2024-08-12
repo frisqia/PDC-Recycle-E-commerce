@@ -20,6 +20,7 @@ from .controllers.carts import carts_blueprint
 from .controllers.shipping_options import shipping_options_blueprint
 from .controllers.shipments import shipments_blueprint
 from .controllers.calculators import calculators_blueprint
+from .controllers.categories import categories_blueprint
 
 load_dotenv(override=True)
 migrate = Migrate()
@@ -55,6 +56,7 @@ def create_app():
     app.register_blueprint(shipping_options_blueprint)
     app.register_blueprint(shipments_blueprint)
     app.register_blueprint(calculators_blueprint)
+    app.register_blueprint(categories_blueprint)
 
     db.init_app(app)
     mongo.init_app(app)
