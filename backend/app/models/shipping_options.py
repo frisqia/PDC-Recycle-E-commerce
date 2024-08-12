@@ -1,5 +1,4 @@
 from sqlalchemy import Integer, Column, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
 from datetime import datetime
 import pytz
 
@@ -15,8 +14,6 @@ class ShippingOptions(db.Model):
     is_active = Column(Integer, default=False, nullable=False)
     created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
-
-    transactions = relationship("Transactions", backref="shipping_options")
 
     def __init__(self, shipment_id, seller_id, is_active):
         self.shipment_id = shipment_id

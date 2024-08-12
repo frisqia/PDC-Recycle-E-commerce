@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, SmallInteger
-from sqlalchemy.sql import func
 from enum import Enum
 from datetime import datetime
 import pytz
+import uuid
 
 from ..db import db
 
@@ -18,18 +18,16 @@ class transaction_status(Enum):
 class Transactions(db.Model):
     __tablename__ = "transactions"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    # address_id = Column
+    id = Column(
+        Integer,
+        primary_key=True,
+        default=lambda: Transactions.generate_transaction_id(),
+    )
+    # tracking number id
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
-    shipping_options_id = Column(
-        Integer, ForeignKey("shipping_options.id"), nullable=False
-    )
     user_seller_voucher_id = Column(
         Integer, ForeignKey("user_seller_vouchers.id"), nullable=True
-    )
-    order_date = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     total_weight_kg = Column(SmallInteger, nullable=False)
     total_volume_m3 = Column(SmallInteger, nullable=False)
@@ -44,3 +42,12 @@ class Transactions(db.Model):
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
 
     # reviews = relationship("Reviews", backref="transaction_reviews")
+
+    def generate_transaction_id(self):
+        prefix = "TRX"
+        date_str = datetime.now().strftime("%Y%m%d")
+
+        snowflake_id = str(uuid.uuid4()).replace("-", "").upper()
+        snowflake_id = snowflake_id[:8]
+
+        return f"{prefix}/{date_str}/{snowflake_id}"
