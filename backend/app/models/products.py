@@ -87,6 +87,12 @@ class Products(db.Model):
             .scalar()
         )
 
+        seller = self.seller_products.to_dict()
+        seller_info = {
+            "store_name": seller["store_name"],
+            "store_immage_url": seller["store_image_url"],
+        }
+
         return {
             "id": self.id,
             "name": self.name,
@@ -103,10 +109,17 @@ class Products(db.Model):
             "reviews": reviews,
             "avg_rating": avg_rating,
             "seller_id": self.seller_id,
+            "seller_info": seller_info,
             "created_at": self.created_at,
         }
 
     def to_cart(self):
+        seller = self.seller_products.to_dict()
+        seller_info = {
+            "store_name": seller["store_name"],
+            "store_immage_url": seller["store_image_url"],
+        }
+
         return {
             "id": self.id,
             "name": self.name,
@@ -117,6 +130,7 @@ class Products(db.Model):
             "category_name": self.category_products.category_name,
             "is_active": self.is_active,
             "seller_id": self.seller_products.id,
+            "seller_info": seller_info,
             "store_name": self.seller_products.store_name,
         }
 

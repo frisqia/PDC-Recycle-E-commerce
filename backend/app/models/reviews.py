@@ -19,12 +19,13 @@ class Reviews(db.Model):
     created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
 
     def to_dict(self):
+        user_username = self.user_reviews.to_dict()["username"]
+
         return {
             "id": self.id,
-            "product_id": self.product_id,
-            "seller_id": self.seller_id,
             # "transaction_id": self.transaction_id,
             "user_id": self.user_id,
+            "user_username": user_username,
             "rating": self.rating,
             "review": self.review,
         }
