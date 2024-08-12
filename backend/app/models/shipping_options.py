@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, BOOLEAN, DateTime, ForeignKey, event
+from sqlalchemy import Integer, Column, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import pytz
@@ -12,18 +12,22 @@ class ShippingOptions(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=True)
     shipment_id = Column(Integer, ForeignKey("shipments.id"), nullable=False)
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
-    availibility = Column(BOOLEAN, default=True, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=True)
+    is_active = Column(Integer, default=False, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
+    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
 
     transactions = relationship("Transactions", backref="shipping_options")
 
+    def __init__(self, shipment_id, seller_id, is_active):
+        self.shipment_id = shipment_id
+        self.seller_id = seller_id
+        self.is_active = is_active
 
-@event.listens_for(ShippingOptions, "before_insert")
-def set_created_at(mapper, connection, target):
-    target.created_at = datetime.now(pytz.UTC)
-
-
-@event.listens_for(ShippingOptions, "before_update")
-def set_updated_at(mapper, connection, target):
-    target.updated_at = datetime.now(pytz.UTC)
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "shipment_id": self.shipment_id,
+            "shipment": self.shipment.vendor_name,
+            "seller_id": self.seller_id,
+            "is_active": self.is_active,
+        }

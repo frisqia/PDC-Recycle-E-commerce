@@ -44,12 +44,6 @@ export default function LoginForm() {
     if (status === 200 || status === 201) {
       toast(message, {
         className: "bg-green-500",
-        action: {
-          label: "Sign-in",
-          onClick: () => {
-            router.push("/login");
-          },
-        },
       });
     } else {
       toast(message, {
@@ -65,8 +59,12 @@ export default function LoginForm() {
     try {
       const jsonValues = JSON.stringify(values);
       const res = await instance.post("users/login", jsonValues);
-      const { message } = res.data;
-      toastMessage(message, res.status);
+      const { access_token } = res.data;
+      localStorage.setItem("userAccessToken", access_token);
+      toastMessage("User logged in successfully", res.status);
+      async () => {
+        setTimeout(() => router.push("users/dashboard"), 2000);
+      };
     } catch (error: any) {
       toastMessage(error.response.data.error, error.response.status);
     }

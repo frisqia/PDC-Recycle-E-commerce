@@ -17,13 +17,8 @@ def get_provinces():
 @locations_blueprint.route("/districts", methods=["GET"])
 @swag_from("./location_all_districts.yml")
 def get_districts():
-    return service.get_districts()
-
-
-@locations_blueprint.route("/subdistricts", methods=["GET"])
-@swag_from("./location_all_subdistricts.yml")
-def get_subdistricts():
-    return service.get_subdistricts()
+    req = request
+    return service.get_districts(req)
 
 
 @locations_blueprint.route("/search", methods=["GET"])
@@ -31,5 +26,4 @@ def get_subdistricts():
 def get_location():
     prov_id = request.args.get("prov_id", type=int)
     dist_id = request.args.get("dist_id", type=int)
-    subdist_id = request.args.get("subdist_id", type=int)
-    return service.get_location_by_id(prov_id, dist_id, subdist_id)
+    return service.get_location_by_id(prov_id, dist_id)

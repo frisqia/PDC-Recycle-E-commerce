@@ -2,6 +2,13 @@ tags:
     - Locations
 summary: Get all districts
 description: Get all districts
+parameters:
+    - in: query
+      name: prov_id
+      schema:
+          type: integer
+          example: 1
+      required: false
 responses:
     200:
         description: Successfully get districts

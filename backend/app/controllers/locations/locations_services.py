@@ -13,31 +13,31 @@ class LocationServices:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def get_districts(self):
+    def get_districts(self, req):
         try:
-            return [data.to_dict() for data in self.repository.get_districts()]
+            province_id = req.args.get("prov_id")
+
+            districts = self.repository.get_districts(province_id=province_id)
+
+            if not districts:
+                raise ValueError("District not found")
+
+            return [district.to_dict() for district in districts]
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def get_subdistricts(self):
+    def get_location_by_id(self, prov_id, dist_id):
         try:
-            return [data.to_dict() for data in self.repository.get_subdistricts()]
-        except Exception as e:
-            return {"error": str(e)}, 500
-
-    def get_location_by_id(self, prov_id, dist_id, subdist_id):
-        try:
-            if subdist_id is not None:
-                subdistrict = self.repository.get_subdistricts_by_id(subdist_id)
-                if subdistrict is None:
-                    raise ValueError("Subdistrict not found")
-                return subdistrict.to_dict()
-            if dist_id is not None:
+            if dist_id:
                 district = self.repository.get_districts_by_id(dist_id)
                 if district is None:
                     raise ValueError("District not found")
                 return district.to_dict()
-            if prov_id is not None:
+
+            if prov_id:
                 province = self.repository.get_provinces_by_id(prov_id)
                 if province is None:
                     raise ValueError("Province not found")

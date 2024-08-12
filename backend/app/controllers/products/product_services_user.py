@@ -19,7 +19,7 @@ class ProductServicesUser:
             if not products:
                 raise ValueError("Product not found / Invalid Category ID")
 
-            return [product.to_dict() for product in products], 200
+            return self.response(products=products), 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
@@ -29,32 +29,35 @@ class ProductServicesUser:
         rating = req.args.get("rating", None)
         price = req.args.get("price", None)
         date = req.args.get("date", None)
+        category = req.args.get("category", None)
 
         try:
             per_page = req.args.get("per_page", 10, int)
             page = req.args.get("page", 1, int)
 
-            if rating and (rating == "desc" or rating == "asc"):
-                products = self.repository.get_product_sorted_by_rating(
-                    rating=rating, per_page=per_page, page=page
-                )
-
-            if price and (price == "desc" or price == "asc"):
-                products = self.repository.get_product_sorted_by_price(
-                    price=price, per_page=per_page, page=page
-                )
-
-            if date and date == "newest":
-                products = self.repository.get_product_sorted_by_date(
-                    date=date, per_page=per_page, page=page
-                )
+            products = self.repository.get_product_by_filter(
+                rating=rating,
+                price=price,
+                date=date,
+                per_page=per_page,
+                page=page,
+                category_id=category,
+            )
 
             if not products:
                 raise ValueError("Product not found / Invalid Filter")
 
-            return [product.to_dict() for product in products], 200
+            return self.response(products=products), 200
 
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
+
+    def response(self, products):
+        return {
+            "products": [product.to_dict() for product in products],
+            "total_page": products.pages,
+            "current_page": products.page,
+            "total_items": products.total,
+        }

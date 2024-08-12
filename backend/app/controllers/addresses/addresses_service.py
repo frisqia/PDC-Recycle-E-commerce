@@ -8,7 +8,7 @@ class AddressesService:
         self.db = db
         self.repository = repository or AddressesRepository()
 
-    def create_address(self, data, identity, rt_rw):
+    def create_address(self, data, identity):
         try:
             data = get_data_and_validate(
                 data,
@@ -25,7 +25,8 @@ class AddressesService:
             if not is_filled(**data):
                 raise ValueError("Please fill all required fields")
 
-            data["rt_rw"] = rt_rw if rt_rw else None
+            rt_rw = data.get("rt_rw")
+            data["rt_rw"] = rt_rw if rt_rw else "000/000"
 
             if identity.get("role") == "seller":
                 data["seller_id"] = identity.get("id")
@@ -39,7 +40,7 @@ class AddressesService:
             self.db.session.add(address)
             self.db.session.commit()
 
-            return {"address": "Address added successfully"}
+            return {"message": "Address added successfully"}
         except ValueError as e:
             self.db.session.rollback()
             return {"error": str(e)}, 400
@@ -62,8 +63,10 @@ class AddressesService:
                 postal_code=str,
             )
 
-            address = self.find_address_by_identity_address(
-                identity=identity, address_id=address_id
+            address = self.repository.get_address_by_filter(
+                address_id=address_id,
+                role_id=identity.get("id"),
+                role=identity.get("role"),
             )
 
             if address is None:

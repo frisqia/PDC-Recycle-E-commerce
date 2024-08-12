@@ -37,33 +37,34 @@ class ProductsRepository:
             category_id=category_id, is_active=1
         ).paginate(page=page, per_page=per_page)
 
-    def get_product_sorted_by_rating(self, rating, per_page, page):
-        query = (
-            self.product.query.filter_by(is_active=1)
-            .outerjoin(Reviews, self.product.id == Reviews.product_id)
-            .group_by(self.product.id)
-        )
-        if rating == "asc":
-            query = query.order_by(func.coalesce(func.avg(Reviews.rating), 0).asc())
-        if rating == "desc":
-            query = query.order_by(func.coalesce(func.avg(Reviews.rating), 0).desc())
+    def get_product_by_filter(
+        self, page, per_page, rating=None, price=None, date=None, category_id=None
+    ):
+        query = self.product.query
 
-        return query.paginate(page=page, per_page=per_page)
+        if rating:
+            query = (
+                query.outerjoin(Reviews, self.product.id == Reviews.product_id)
+                .group_by(self.product.id)
+                .filter(self.product.is_active == 1)
+            )
 
-    def get_product_sorted_by_price(self, price, per_page, page):
-        query = self.product.query.filter_by(is_active=1)
+            if rating == "asc":
+                query = query.order_by(func.coalesce(func.avg(Reviews.rating), 0).asc())
+            if rating == "desc":
+                query = query.order_by(
+                    func.coalesce(func.avg(Reviews.rating), 0).desc()
+                )
 
+        if category_id:
+            query = query.filter(self.product.category_id == category_id)
         if price == "asc":
             query = query.order_by(self.product.price.asc())
         if price == "desc":
             query = query.order_by(self.product.price.desc())
-
-        return query.paginate(page=page, per_page=per_page)
-
-    def get_product_sorted_by_date(self, date, per_page, page):
-        query = self.product.query.filter_by(is_active=1)
-
         if date == "newest":
             query = query.order_by(self.product.created_at.desc())
+        if date == "latest":
+            query = query.order_by(self.product.created_at.asc())
 
         return query.paginate(page=page, per_page=per_page)

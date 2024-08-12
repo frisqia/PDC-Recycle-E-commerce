@@ -22,3 +22,6 @@ class SellerVouchersRepository:
 
     def get_voucher_by_id(self, voucher_id, seller_id):
         return self.voucher.query.filter_by(id=voucher_id, seller_id=seller_id).first()
+
+    def get_voucher_only_by_voucher_id(self, voucher_id):
+        return self.voucher.query.filter_by(id=voucher_id).first()

@@ -23,7 +23,6 @@ class PaymentDetails(db.Model):
     __tablename__ = "payment_details"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    # transaction_id = Column(Integer, nullable=False)
     payment_method = Column(
         SmallInteger, ForeignKey("payment_methods.id"), nullable=False
     )
@@ -32,9 +31,5 @@ class PaymentDetails(db.Model):
     payment_status = Column(Integer, nullable=True)
     image_url = Column(VARCHAR(255), nullable=True)
     reference_number = Column(VARCHAR(50), nullable=True)
-    created_at = Column(DateTime, nullable=False)
-
-
-@event.listens_for(PaymentDetails, "before_insert")
-def set_created_at(mapper, connection, target):
-    target.created_at = datetime.now(pytz.UTC)
+    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
+    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))

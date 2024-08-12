@@ -36,25 +36,23 @@ class ProductsServices:
             return {"error": str(e)}, 500
 
     def get_list_products(self, request, role, role_id=None):
-        if role == "seller":
-            self.check_role_and_id(role, role_id)
+        self.check_role_and_id(role, role_id)
 
         try:
             per_page = request.args.get("per_page", 10, int)
             page = request.args.get("page", 1, int)
 
-            all_products = self.repository.get_list_products(
+            products = self.repository.get_list_products(
                 role=role, page=page, per_page=per_page, role_id=role_id
             )
-            return [product.to_dict() for product in all_products], 200
+            return self.response(products=products), 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
 
     def get_product_by_id(self, product_id, role, role_id=None):
-        if role == "seller":
-            self.check_role_and_id(role, role_id)
+        self.check_role_and_id(role, role_id)
 
         try:
             product = self.repository.get_product_by_id(
@@ -153,3 +151,11 @@ class ProductsServices:
             width_cm=int,
             height_cm=int,
         )
+
+    def response(self, products):
+        return {
+            "products": [product.to_dict() for product in products],
+            "total_page": products.pages,
+            "current_page": products.page,
+            "total_items": products.total,
+        }

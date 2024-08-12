@@ -4,11 +4,6 @@ summary: Get location by id
 description: Get location by id
 parameters:
     - in: query
-      name: subdist_id
-      schema:
-          type: integer
-      required: false
-    - in: query
       name: dist_id
       schema:
           type: integer
@@ -27,13 +22,16 @@ responses:
             properties:
                 id:
                     type: integer
-                    example: 51
+                    example: 1
                 province_id:
                     type: integer
-                    example: 5101
-                district_id:
-                    type: integer
-                    example: 510104
+                    example: 21
+                district:
+                    type: string
+                    example: "Aceh Barat"
+                province_name:
+                    type: string
+                    example: "Nanggroe Aceh Darussalam (NAD)"
     500:
         description: Internal Server Error
         schema:

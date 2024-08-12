@@ -3,7 +3,6 @@ from .categories import Categories
 from .products import Products
 from .provinces import Provinces
 from .districts import Districts
-from .subdistricts import Subdistricts
 from .shipments import Shipments
 from .sellers import Sellers
 from .shipping_options import ShippingOptions

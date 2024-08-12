@@ -43,8 +43,8 @@ class Products(db.Model):
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     is_active = Column(SmallInteger, default=1, nullable=False)
     sold_qty = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-    updated_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.utc))
+    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.utc))
 
     reviews = relationship("Reviews", backref="product_reviews")
 
@@ -106,6 +106,18 @@ class Products(db.Model):
             "created_at": self.created_at,
         }
 
+    def to_cart(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "price": self.price,
+            "stock": self.stock,
+            "image_url": self.image_url,
+            "category_id": self.category_id,
+            "is_active": self.is_active,
+            "seller_id": self.seller_id,
+        }
+
     def upload_image(self):
         pass
 
@@ -117,13 +129,3 @@ class Products(db.Model):
 
     def increase_item_qty(self, qty):
         self.stock += qty
-
-
-@event.listens_for(Products, "before_insert")
-def set_created_at(mapper, connection, target):
-    target.created_at = datetime.now(pytz.UTC)
-
-
-@event.listens_for(Products, "before_update")
-def set_updated_at(mapper, connection, target):
-    target.updated_at = datetime.now(pytz.UTC)
