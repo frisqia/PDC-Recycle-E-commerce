@@ -1,13 +1,14 @@
 from sqlalchemy.sql import func
 
 from app.db import db
-from app.models import Products, Reviews
+from app.models import Products, Reviews, Addresses
 
 
 class ProductsRepository:
-    def __init__(self, db=db, product=Products):
+    def __init__(self, db=db, product=Products, address=Addresses):
         self.db = db
         self.product = product
+        self.address = address
 
     def create_product(self, seller_id, **data):
         return self.product(seller_id=seller_id, **data)
@@ -38,7 +39,15 @@ class ProductsRepository:
         ).paginate(page=page, per_page=per_page)
 
     def get_product_by_filter(
-        self, page, per_page, rating=None, price=None, date=None, category_id=None
+        self,
+        page,
+        per_page,
+        rating=None,
+        price=None,
+        date=None,
+        category_id=None,
+        province_id=None,
+        district_id=None,
     ):
         query = self.product.query
 
@@ -66,5 +75,17 @@ class ProductsRepository:
             query = query.order_by(self.product.created_at.desc())
         if date == "latest":
             query = query.order_by(self.product.created_at.asc())
+        if province_id:
+            query = (
+                query.join(Addresses, self.product.seller_id == Addresses.seller_id)
+                .group_by(self.product.id)
+                .filter(Addresses.province_id == province_id)
+            )
+        if district_id:
+            query = (
+                query.join(Addresses, self.product.seller_id == Addresses.seller_id)
+                .group_by(self.product.id)
+                .filter(Addresses.district_id == district_id)
+            )
 
         return query.paginate(page=page, per_page=per_page)

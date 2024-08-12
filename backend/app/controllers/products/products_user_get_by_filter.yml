@@ -45,6 +45,20 @@ parameters:
           type: integer
           example: 1
       description: Category ID
+    - name: province_id
+      in: query
+      required: false
+      schema:
+          type: integer
+          example: 1
+      description: Province ID
+    - name: district_id
+      in: query
+      required: false
+      schema:
+          type: integer
+          example: 1
+      description: District ID
 responses:
     200:
         description: Returns list of products

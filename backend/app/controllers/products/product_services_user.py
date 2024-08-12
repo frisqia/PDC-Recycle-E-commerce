@@ -30,6 +30,8 @@ class ProductServicesUser:
         price = req.args.get("price", None)
         date = req.args.get("date", None)
         category = req.args.get("category", None)
+        province_id = req.args.get("province_id", None)
+        district_id = req.args.get("district_id", None)
 
         try:
             per_page = req.args.get("per_page", 10, int)
@@ -42,6 +44,8 @@ class ProductServicesUser:
                 per_page=per_page,
                 page=page,
                 category_id=category,
+                province_id=province_id,
+                district_id=district_id,
             )
 
             if not products:
