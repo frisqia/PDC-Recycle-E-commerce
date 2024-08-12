@@ -1,5 +1,5 @@
 from .products_repository import ProductsRepository
-from ..sellers.sellers_repository import SellersRepository
+from ..sellers.sellers_service import SellersServices
 
 from app.db import db
 from ..common import is_filled, get_data_and_validate
@@ -7,16 +7,24 @@ from ..common import is_filled, get_data_and_validate
 
 class ProductsServices:
     def __init__(
-        self, db=db, repository=None, seller_repository=None, category_repository=None
+        self,
+        db=db,
+        repository=None,
+        seller_service=None,
     ):
         self.db = db
         self.repository = repository or ProductsRepository()
-        self.seller_repository = seller_repository or SellersRepository()
+        self.seller_service = seller_service or SellersServices()
 
     def create_product(self, data, role, role_id):
-        self.check_role_and_id(role, role_id)
-
         try:
+            seller_info_address = self.check_role_and_id(role, role_id)["seller"][
+                "addresses"
+            ]
+
+            if not seller_info_address or len(seller_info_address) <= 0:
+                raise ValueError("Must input an address before creating a product")
+
             all_data = self.all_data(data)
 
             if not is_filled(**all_data):
@@ -132,9 +140,13 @@ class ProductsServices:
             return {"error": "Unauthorized"}, 401
         if role_id is None:
             return {"error": "Invalid seller"}, 400
-        if self.seller_repository.get_seller_by_id(role_id) is None:
-            return {"error": "Invalid seller"}, 400
-        return True
+
+        seller_info = self.seller_service.seller_info(role_id)
+
+        if seller_info[1] != 200:
+            raise ValueError("Seller not found")
+
+        return seller_info[0]
 
     def all_data(self, data):
         return get_data_and_validate(
