@@ -26,6 +26,6 @@ instanceWithAuth.interceptors.request.use(function (config) {
   if (!token) {
     throw new Error("Missing Auth Token");
   }
-  config.headers.Authorization = token;
+  config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

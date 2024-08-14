@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { instance } from "@/utils/auth";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,11 +29,16 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string(),
+  password: z
+    .string()
+    .regex(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/, {
+      message: "Invalid Password.",
+    }),
 });
 
 export default function LoginForm() {
   const router = useRouter();
+  const [success, setSuccess] = useState<Boolean>(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,6 +50,7 @@ export default function LoginForm() {
     if (status === 200 || status === 201) {
       toast(message, {
         className: "bg-green-500",
+        description: "Redirecting to your dashboard...",
       });
     } else {
       toast(message, {
@@ -60,13 +67,15 @@ export default function LoginForm() {
       const jsonValues = JSON.stringify(values);
       const res = await instance.post("users/login", jsonValues);
       const { access_token } = res.data;
+      console.log(res);
       localStorage.setItem("userAccessToken", access_token);
       toastMessage("User logged in successfully", res.status);
-      async () => {
+      if (res.status === 200 || res.status === 201) {
         setTimeout(() => router.push("users/dashboard"), 2000);
-      };
+      }
     } catch (error: any) {
-      toastMessage(error.response.data.error, error.response.status);
+      console.log(error);
+      toastMessage(error?.response?.data?.error, error?.response?.status);
     }
   }
   return (
