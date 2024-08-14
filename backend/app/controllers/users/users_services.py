@@ -19,7 +19,7 @@ class UserServices:
 
             user = self.repository.get_user_by_email(user_data["email"])
 
-            if user is None or not user.check_password(user_data["password"]):
+            if not user or not user.check_password(user_data["password"]):
                 raise ValueError("Invalid Email / Password")
 
             if user.is_active == 0:

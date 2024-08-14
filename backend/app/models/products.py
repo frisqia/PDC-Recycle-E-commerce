@@ -8,7 +8,6 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Float,
-    event,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -47,6 +46,7 @@ class Products(db.Model):
     updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.utc))
 
     reviews = relationship("Reviews", backref="product_reviews")
+    product_orders = relationship("ProductOrders", backref="product_orders")
 
     def __init__(
         self,
@@ -91,6 +91,7 @@ class Products(db.Model):
         seller_info = {
             "store_name": seller["store_name"],
             "store_immage_url": seller["store_image_url"],
+            "store_district": seller["addresses"][0]["district_name"],
         }
 
         return {
