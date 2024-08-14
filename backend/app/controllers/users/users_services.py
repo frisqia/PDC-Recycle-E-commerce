@@ -37,15 +37,15 @@ class UserServices:
     def user_register(self, data):
         try:
             user_data = get_data_and_validate(
-                data,
-                **{
-                    "username": str,
-                    "fullname": str,
-                    "email": str,
-                    "phone_number": str,
-                    "password": str,
-                },
-            )
+            data,
+            **{
+                "username": str,
+                "fullname": str,
+                "email": str,
+                "phone_number": str,
+                "password": str,
+            },
+        )
 
             if not is_filled(**user_data):
                 raise ValueError("Please fill all required fields")
