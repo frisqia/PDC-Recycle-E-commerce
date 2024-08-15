@@ -71,7 +71,12 @@ class CalculatorsService:
 
                 # insert discount to calculated_product_detail
                 for key, value in voucher_list.items():
-                    calculated_product_detail[key]["total_discount"] = value
+                    calculated_product_detail[key]["total_discount"] = value[
+                        "total_discount"
+                    ]
+                    calculated_product_detail[key]["user_seller_voucher_id"] = value[
+                        "user_seller_voucher_id"
+                    ]
 
             # Calculated shipment fee
             if selected_courier:
@@ -85,9 +90,10 @@ class CalculatorsService:
                     calculated_product_detail=calculated_product_detail,
                 )
 
-                # inser to calculated_product_detail
-                for key, value in calculated_shipment_fee.items():
-                    calculated_product_detail[int(key)]["shipment_fee"] = value
+                # insert to calculated_product_detail
+                for seller_id, values in calculated_shipment_fee.items():
+                    for key, value in values.items():
+                        calculated_product_detail[seller_id][key] = value
 
             # insert total with shipment fee
             final_calculation = self.calculate_final_price(
@@ -142,9 +148,11 @@ class CalculatorsService:
 
         for courier in selected_courier:
             seller_id = courier["seller_id"]
-            seller_district = self.shipment_service.get_seller_address(
+            seller_address = self.shipment_service.get_seller_address(
                 seller_id=seller_id
-            )["district_id"]
+            )
+            seller_address_id = seller_address["id"]
+            seller_district = seller_address["district_id"]
             courier_vendor = courier["selected_courier"]
 
             shipment_option = asyncio.run(
@@ -160,6 +168,12 @@ class CalculatorsService:
 
             for data in shipment_option.get(courier_vendor):
                 if data["service"] == courier["selected_service"]:
-                    all_shipment_fee[seller_id] = data["cost"]
+                    all_shipment_fee[seller_id] = {
+                        "shipment_fee": data["cost"],
+                        "seller_address_id": seller_address_id,
+                        "service": data["service"],
+                        "etd": data["etd"],
+                        "vendor_name": courier_vendor,
+                    }
 
         return all_shipment_fee

@@ -21,14 +21,19 @@ class ProductService:
 
             for product in products:
 
-                product_detail = self.product_service_user.get_product_by_id(
-                    product_id=product["id"]
+                product_detail, status_code = (
+                    self.product_service_user.get_product_by_id(
+                        product_id=product["id"]
+                    )
                 )
 
-                if not product_detail:
+                if status_code != 200:
                     raise ValueError(f"Product with id: {product['id']} not found")
 
-                product_detail = product_detail[0]
+                if product_detail["stock"] < product["quantity"]:
+                    raise ValueError(
+                        f"Insufficient quantity for product with id: {product['id']}"
+                    )
 
                 sub_total = product_detail["price"] * product["quantity"]
                 sub_weight = product_detail["weight_kg"] * product["quantity"]
@@ -72,6 +77,8 @@ class ProductService:
             "product_type",
             "weight_kg",
             "volume_m3",
+            "seller_info",
+            "seller_id",
         ]
 
         for key in keys:

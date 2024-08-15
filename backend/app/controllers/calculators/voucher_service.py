@@ -38,7 +38,10 @@ class VoucherService:
 
             seller_id = seller_voucher_detail["seller_id"]
 
-            voucher_list[seller_id] = calculated_discount
+            voucher_list[seller_id] = {
+                "total_discount": calculated_discount,
+                "user_seller_voucher_id": voucher_id,
+            }
 
         return voucher_list
 
