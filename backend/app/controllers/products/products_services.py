@@ -171,3 +171,28 @@ class ProductsServices:
             "current_page": products.page,
             "total_items": products.total,
         }
+
+    def transaction_success_modification(self, product_id, quantity, commit=True):
+        try:
+            product = self.repository.get_product_by_id(
+                product_id=product_id, role="user"
+            )
+
+            product.item_sold(quantity)
+            product.reduce_item_qty(quantity)
+
+            if commit:
+                self.db.session.commit()
+
+            return {
+                "message": "Product stock and sold quantity updated successfully"
+            }, 200
+
+        except ValueError as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 500

@@ -42,8 +42,12 @@ class Products(db.Model):
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     is_active = Column(SmallInteger, default=1, nullable=False)
     sold_qty = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.utc))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.utc))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.utc)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.utc)
+    )
 
     reviews = relationship("Reviews", backref="product_reviews")
     product_orders = relationship("ProductOrders", backref="product_orders")

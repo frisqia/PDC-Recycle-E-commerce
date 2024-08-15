@@ -11,8 +11,12 @@ class Provinces(db.Model):
 
     id = Column(SmallInteger, primary_key=True, autoincrement=False)
     province = Column(VARCHAR(100), unique=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(pytz.UTC), nullable=False)
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, default=lambda: datetime.now(pytz.UTC), nullable=False
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     district = relationship("Districts", backref="province_districts")
     addresses = relationship("Addresses", backref="province_addresses")

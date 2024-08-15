@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fb330a3fc84bf31b1407f9efd475555e901c3acbaf501e2d4015e73c4d58c5dd"
+            "sha256": "64df10da370c42977ed16280b1e5a991ddf519fc456ab1d4361e489d3b7816f5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -630,6 +630,15 @@
             "markers": "python_version >= '3.7'",
             "version": "==2.1.5"
         },
+        "midtransclient": {
+            "hashes": [
+                "sha256:0c562af79121d8d915a4bc93f4dca849837e4fbebc9a01c5528575ca6af953ed",
+                "sha256:37186bbddbbee078e3efde1b1b1f1a57fc9f52d7fd31b1ddc8b0de14ab7f90d6"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.5'",
+            "version": "==1.4.2"
+        },
         "mistune": {
             "hashes": [
                 "sha256:71481854c30fdbc938963d3605b72501f5c10a9320ecd412c121c163a1c7d205",
@@ -838,6 +847,15 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==4.8.0"
+        },
+        "pyngrok": {
+            "hashes": [
+                "sha256:1e96ab1229736e2e030fa8975805ab1fa9e463178f83337fc07fdd2b4e8dbed6",
+                "sha256:4e43af9b2f21ceed8d213797028fe8823003f185b49792e4d383302365c81515"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==7.2.0"
         },
         "python-dotenv": {
             "hashes": [

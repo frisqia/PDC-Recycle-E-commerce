@@ -1,8 +1,14 @@
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, SmallInteger
+from sqlalchemy import (
+    Column,
+    Integer,
+    DateTime,
+    ForeignKey,
+    SmallInteger,
+    VARCHAR,
+)
 from enum import Enum
 from datetime import datetime
 import pytz
-import uuid
 
 from ..db import db
 
@@ -13,41 +19,83 @@ class transaction_status(Enum):
     PREPARED_BY_SELLER = 3
     ON_DELIVERY = 4
     DELIVERED = 5
+    CANCELED = 6
 
 
 class Transactions(db.Model):
     __tablename__ = "transactions"
 
     id = Column(
-        Integer,
+        VARCHAR(30),
         primary_key=True,
-        default=lambda: Transactions.generate_transaction_id(),
     )
-    # tracking number id
+    parent_id = Column(VARCHAR(30), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     user_seller_voucher_id = Column(
         Integer, ForeignKey("user_seller_vouchers.id"), nullable=True
     )
-    total_weight_kg = Column(SmallInteger, nullable=False)
-    total_volume_m3 = Column(SmallInteger, nullable=False)
-    total_items = Column(SmallInteger, nullable=False)
-    total_price = Column(Integer, nullable=False)
+    # shipment detail
+    payment_details_id = Column(
+        Integer, ForeignKey("payment_details.id"), nullable=True
+    )
+    total_discount = Column(Integer, nullable=False, default=0)
     transaction_status = Column(
         SmallInteger,
         default=transaction_status.WAITING_FOR_PAYMENT.value,
         nullable=False,
     )
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    payment_link = Column(VARCHAR(255), nullable=True)
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     # reviews = relationship("Reviews", backref="transaction_reviews")
 
-    def generate_transaction_id(self):
-        prefix = "TRX"
-        date_str = datetime.now().strftime("%Y%m%d")
+    product_orders = db.relationship("ProductOrders", backref="transaction_orders")
 
-        snowflake_id = str(uuid.uuid4()).replace("-", "").upper()
-        snowflake_id = snowflake_id[:8]
+    def __init__(
+        self,
+        id,
+        user_id,
+        seller_id,
+        user_seller_voucher_id,
+        total_discount,
+        parent_id,
+        payment_link=None,
+    ):
+        self.id = id
+        self.user_id = user_id
+        self.seller_id = seller_id
+        self.user_seller_voucher_id = user_seller_voucher_id
+        self.total_discount = total_discount
+        self.parent_id = parent_id
+        self.payment_link = payment_link
 
-        return f"{prefix}/{date_str}/{snowflake_id}"
+    def to_dict(self):
+        seller = self.seller_transactions.to_dict()
+        seller_info = {
+            "store_name": seller["store_name"],
+            "store_image_url": seller["store_image_url"],
+        }
+
+        products = self.product_orders
+        product_info = [product.to_dict() for product in products]
+
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "seller_id": self.seller_id,
+            "seller_info": seller_info,
+            "user_seller_voucher_id": self.user_seller_voucher_id,
+            "total_discount": self.total_discount,
+            "transaction_status": self.transaction_status,
+            "transaction_status_name": transaction_status(self.transaction_status).name,
+            "products": product_info,
+            "payment_link": self.payment_link,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }

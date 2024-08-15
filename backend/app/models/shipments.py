@@ -3,7 +3,6 @@ from sqlalchemy import (
     Integer,
     DateTime,
     VARCHAR,
-    event,
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -17,10 +16,15 @@ class Shipments(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     vendor_name = Column(VARCHAR(30), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
-    shipping_options = relationship("ShippingOptions", backref="shipment")
+    shipping_options = relationship("ShippingOptions", backref="shipment_options")
+    shipment_details = relationship("ShipmentDetails", backref="shipment_details")
 
     def to_dict(self):
         return {

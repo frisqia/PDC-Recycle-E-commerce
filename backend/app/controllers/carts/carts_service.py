@@ -139,9 +139,7 @@ class CartsService:
         if quantity <= 0:
             raise ValueError("Quantity must be greater than 0")
 
-        print(product)
-
         if product["stock"] < quantity:
-            raise ValueError("Insufficient quantity")
+            raise ValueError(f"Insufficient quantity for product with id: {product_id}")
 
         return product

@@ -106,8 +106,9 @@ class UserSellerVouchersService:
                 self.db.session.rollback()
             return {"error": str(e)}, 500
 
-    def user_unused_voucher(self, identity, user_seller_voucher_id, commit=True):
+    def user_unused_voucher(self, user_id, user_seller_voucher_id, commit=True):
         try:
+            identity = {"id": user_id, "role": "user"}
             self.check_user(identity=identity)
 
             user_id = identity.get("id")
@@ -117,15 +118,15 @@ class UserSellerVouchersService:
 
             if not voucher:
                 raise ValueError("Voucher not found")
-            if voucher.is_used == 1:
-                raise ValueError("Voucher already used")
+            if voucher.is_used == 0:
+                raise ValueError("Voucher already unused")
 
-            voucher.unusued_voucher()
+            voucher.unused_voucher()
 
             if commit:
                 self.db.session.commit()
 
-            return {"message": "Voucher used successfully"}, 200
+            return {"message": "Voucher unused successfully"}, 200
         except ValueError as e:
             if commit:
                 self.db.session.rollback()

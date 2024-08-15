@@ -24,8 +24,12 @@ class Users(db.Model, UserMixin):
     password = Column(VARCHAR(255), nullable=False)
     phone_number = Column(VARCHAR(14), unique=True, nullable=False)
     is_active = Column(Integer, default=Is_Active_Status.ACTIVE.value, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     user_seller_vouchers = relationship("UserSellerVouchers", backref="user")
     transactions = relationship("Transactions", backref="user")
@@ -49,6 +53,7 @@ class Users(db.Model, UserMixin):
         addresses = [address.to_dict() for address in self.addresses]
 
         return {
+            "id": self.id,
             "username": self.username,
             "fullname": self.fullname,
             "email": self.email,

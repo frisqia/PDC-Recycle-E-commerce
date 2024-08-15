@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, VARCHAR, TEXT, SmallInteger, DateTime, event
+from sqlalchemy import Column, Integer, VARCHAR, TEXT, SmallInteger, DateTime
 from sqlalchemy.orm import relationship
 import bcrypt
 from enum import Enum
@@ -27,8 +27,12 @@ class Sellers(db.Model):
     is_active = Column(
         SmallInteger, default=Is_Active_Status.ACTIVE.value, nullable=False
     )
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     shipping_options = relationship("ShippingOptions", backref="seller_shippingoptions")
     seller_vouchers = relationship("SellerVouchers", backref="seller_selllervouchers")

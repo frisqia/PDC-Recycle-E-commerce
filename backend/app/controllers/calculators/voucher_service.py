@@ -76,7 +76,7 @@ class VoucherService:
         detail = user_voucher_detail["seller_voucher_detail"]
 
         if user_voucher_detail["is_used"] == 1:
-            raise ValueError("Voucher has been used")
+            raise ValueError(f"Voucher with id: {user_voucher_detail["id"]} has been used")
 
         if detail["is_active"] == 0:
             raise ValueError("Voucher is not active")

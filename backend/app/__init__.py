@@ -5,6 +5,7 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 from flasgger import Swagger
 from flask_cors import CORS
+from pyngrok import ngrok
 
 from .db import db
 from .db import mongo
@@ -21,6 +22,7 @@ from .controllers.shipping_options import shipping_options_blueprint
 from .controllers.shipments import shipments_blueprint
 from .controllers.calculators import calculators_blueprint
 from .controllers.categories import categories_blueprint
+from .controllers.transactions import transactions_blueprint
 
 load_dotenv(override=True)
 migrate = Migrate()
@@ -43,6 +45,11 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
     app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+    app.config["MIDTRANS_SERVER_KEY"] = os.getenv("MIDTRANS_SERVER_KEY")
+    app.config["MIDTRANS_IS_PRODUCTION"] = os.getenv("MIDTRANS_IS_PRODUCTION")
+    app.config["MIDTRANS_CLIENT_KEY"] = os.getenv("MIDTRANS_CLIENT_KEY")
+
+    ngrok.set_auth_token(os.getenv("NGROK_AUTH_TOKEN"))
 
     app.register_blueprint(users_blueprint)
     app.register_blueprint(sellers_blueprint)
@@ -57,6 +64,7 @@ def create_app():
     app.register_blueprint(shipments_blueprint)
     app.register_blueprint(calculators_blueprint)
     app.register_blueprint(categories_blueprint)
+    app.register_blueprint(transactions_blueprint)
 
     db.init_app(app)
     mongo.init_app(app)

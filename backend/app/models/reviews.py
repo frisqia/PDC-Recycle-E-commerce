@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, SmallInteger, Text, DateTime, ForeignKey, event
+from sqlalchemy import Column, Integer, SmallInteger, Text, DateTime, ForeignKey
 from datetime import datetime
 import pytz
 
@@ -16,7 +16,9 @@ class Reviews(db.Model):
     review = Column(Text, nullable=True)
     # transaction_id = (
     #     Column(Integer, ForeignKey("transactions.id"), nullable=False))
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
 
     def to_dict(self):
         user_username = self.user_reviews.to_dict()["username"]

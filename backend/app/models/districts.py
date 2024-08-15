@@ -19,8 +19,8 @@ class Districts(db.Model):
     id = Column(Integer, primary_key=True, autoincrement=False)
     province_id = Column(SmallInteger, ForeignKey("provinces.id"), nullable=False)
     district = Column(VARCHAR(100), unique=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.now(pytz.UTC), nullable=False)
-    updated_at = Column(DateTime, onupdate=datetime.now(pytz.UTC), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(pytz.UTC), nullable=False)
+    updated_at = Column(DateTime, onupdate=lambda: datetime.now(pytz.UTC), nullable=True)
 
     addresses = relationship("Addresses", backref="district_addresses")
 

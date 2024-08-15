@@ -6,8 +6,8 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     SmallInteger,
-    event,
 )
+from sqlalchemy.orm import relationship
 from enum import Enum
 from datetime import datetime
 import pytz
@@ -37,8 +37,19 @@ class Addresses(db.Model):
     is_active = Column(
         SmallInteger, default=Is_Active_Status.ACTIVE.value, nullable=False
     )
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC))
+    updated_at = Column(DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC))
+
+    seller_shipment = relationship(
+        "ShipmentDetails",
+        foreign_keys="[ShipmentDetails.seller_address_id]",
+        backref="seller_addresses",
+    )
+    user_shipment = relationship(
+        "ShipmentDetails",
+        foreign_keys="[ShipmentDetails.user_address_id]",
+        backref="user_addresses",
+    )
 
     def __init__(
         self,
