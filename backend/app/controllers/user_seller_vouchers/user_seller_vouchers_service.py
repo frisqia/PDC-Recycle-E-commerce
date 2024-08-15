@@ -77,7 +77,7 @@ class UserSellerVouchersService:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def user_used_voucher(self, identity, user_seller_voucher_id):
+    def user_used_voucher(self, identity, user_seller_voucher_id, commit=True):
         try:
             self.check_user(identity=identity)
 
@@ -92,14 +92,47 @@ class UserSellerVouchersService:
                 raise ValueError("Voucher already used")
 
             voucher.used_voucher()
-            self.db.session.commit()
+
+            if commit:
+                self.db.session.commit()
 
             return {"message": "Voucher used successfully"}, 200
         except ValueError as e:
-            self.db.session.rollback()
+            if commit:
+                self.db.session.rollback()
             return {"error": str(e)}, 400
         except Exception as e:
-            self.db.session.rollback()
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 500
+
+    def user_unused_voucher(self, identity, user_seller_voucher_id, commit=True):
+        try:
+            self.check_user(identity=identity)
+
+            user_id = identity.get("id")
+            voucher = self.repository.get_voucher_by_id(
+                user_seller_voucher_id=user_seller_voucher_id, user_id=user_id
+            )
+
+            if not voucher:
+                raise ValueError("Voucher not found")
+            if voucher.is_used == 1:
+                raise ValueError("Voucher already used")
+
+            voucher.unusued_voucher()
+
+            if commit:
+                self.db.session.commit()
+
+            return {"message": "Voucher used successfully"}, 200
+        except ValueError as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            if commit:
+                self.db.session.rollback()
             return {"error": str(e)}, 500
 
     def user_voucher_details(self, identity, user_seller_voucher_id):

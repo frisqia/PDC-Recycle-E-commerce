@@ -34,3 +34,6 @@ class UserSellerVouchers(db.Model):
 
     def used_voucher(self):
         self.is_used = Is_Used_Status.USED.value
+
+    def unused_voucher(self):
+        self.is_used = Is_Used_Status.UNUSED.value
