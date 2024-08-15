@@ -29,12 +29,12 @@ class SellerVouchersService:
             data["start_date"] = change_date(start_date, tz)
             data["expiry_date"] = change_date(expiry_date, tz)
 
-            # if data["start_date"] > data["expiry_date"] or data[
-            #     "start_date"
-            # ] < datetime.now(timezone.utc):
-            #     raise ValueError(
-            #         "Start date must be less than expiry date and greater than current date"
-            #     )
+            if data["start_date"] > data["expiry_date"]:
+                raise ValueError("Start date must be less than expiry date")
+            if data["start_date"] < datetime.now(timezone.utc):
+                raise ValueError(
+                    "Start date must be greater than or equal to current date and time"
+                )
 
             voucher = self.repository.create_voucher(data)
 
