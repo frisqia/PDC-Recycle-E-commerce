@@ -28,6 +28,6 @@ class Reviews(db.Model):
             # "transaction_id": self.transaction_id,
             "user_id": self.user_id,
             "user_username": user_username,
-            "rating": self.rating,
+            "rating": round(self.rating, 0),
             "review": self.review,
         }
