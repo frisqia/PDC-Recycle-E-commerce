@@ -94,7 +94,7 @@ class Transactions(db.Model):
             "total_discount": self.total_discount,
             "transaction_status": self.transaction_status,
             "transaction_status_name": transaction_status(self.transaction_status).name,
-            "products": product_info,
+            "product_orders": product_info,
             "payment_link": self.payment_link,
             "created_at": self.created_at,
             "updated_at": self.updated_at,

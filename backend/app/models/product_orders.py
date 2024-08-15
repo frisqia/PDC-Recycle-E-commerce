@@ -35,7 +35,7 @@ class ProductOrders(db.Model):
             "price": product["price"],
         }
         return {
-            "id": self.id,
+            "product_order_id": self.id,
             "product_id": self.product_id,
             "product_info": product_info,
             "quantity": self.quantity,
