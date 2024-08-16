@@ -13,17 +13,7 @@ class MidtransService:
         received_signature = data["signature_key"]
 
         if not self.verify_signature_key(data, received_signature):
-            raise ValueError("Invalid Signature Key")
-
-        # transaction_status = data["transaction_status"]
-        # fraud_status = data["fraud_status"]
-
-        # if transaction_status not in ["settlement", "capture", "pending"]:
-        #     return {"error": "Transaction failed or was canceled", "data": data}, 403
-
-        # if transaction_status in ["settlement", "capture", "pending"]:
-        #     if fraud_status != "accept":
-        #         return {"error": "Transaction is not safe", "data": data}, 403
+            return {"error": "Invalid Signature Key"}, 403
 
         return {"message": "Transaction processed successfully"}, 200
 

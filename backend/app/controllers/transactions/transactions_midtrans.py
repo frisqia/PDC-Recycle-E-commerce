@@ -6,6 +6,7 @@ from ..payment_details.payment_details_service import PaymentDetailsService
 from ..product_orders.product_orders_service import ProductOrdersService
 from ..products.products_services import ProductsServices
 from .transactions_voucher import TransactionsVoucherService
+from ..shipment_details.shipment_details_service import ShipmentDetailsService
 
 
 class MidtransConfirmation:
@@ -18,6 +19,7 @@ class MidtransConfirmation:
         product_order_service=None,
         product_service=None,
         transaction_voucher_service=None,
+        shipment_detail_service=None,
     ):
         self.db = db
         self.repository = repository or TransactionsRepository()
@@ -30,11 +32,15 @@ class MidtransConfirmation:
         self.transaction_voucher_service = (
             transaction_voucher_service or TransactionsVoucherService()
         )
+        self.shipment_detail_service = shipment_detail_service or ShipmentDetailsService()
 
     def midtrans_confirmation(self, data):
         try:
             # raise valueerror
-            self.midtrans_service.webhook(data)
+            message, status_code = self.midtrans_service.webhook(data)
+            
+            if status_code != 200:
+                raise ValueError(message["error"])
 
             new_payment_details = self.payment_details_service.input_details(data)[0][
                 "details"
@@ -55,10 +61,19 @@ class MidtransConfirmation:
                     transaction.payment_details_id = payment_details_id
                     transaction.payment_link = None
 
-                    unused, status_code = self.unused_voucher(transaction=transaction)
+                    #unused voucher
+                    if transaction.user_seller_voucher_id:
+                        unused, status_code = self.unused_voucher(transaction=transaction)
+
+                        if status_code != 200:
+                            raise ValueError(f"{unused['error']} while unused voucher")
+
+                    delete_shipment_detail, status_code = self.shipment_detail_service.delete_detail(
+                        transaction_id=transaction.id
+                    )
 
                     if status_code != 200:
-                        raise ValueError(unused["error"])
+                        raise ValueError(f"{delete_shipment_detail["error"]} while deleting shipment detail")
 
             elif data["transaction_status"] == "settlement":
                 for transaction in transactions:

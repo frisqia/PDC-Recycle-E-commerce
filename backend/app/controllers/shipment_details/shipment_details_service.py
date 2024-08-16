@@ -45,3 +45,14 @@ class ShipmentDetailsService:
             return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
+
+    def delete_detail(self, transaction_id):
+        try:
+            self.repository.delete_shipment_detail(transaction_id=transaction_id)
+
+            self.db.session.commit()
+            return {"message": "Shipment detail deleted successfully"}, 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
