@@ -196,3 +196,27 @@ class ProductsServices:
             if commit:
                 self.db.session.rollback()
             return {"error": str(e)}, 500
+
+    def transaction_canceled_modification(self, product_id, quantity, commit=True):
+        try:
+            product = self.repository.get_product_by_id(
+                product_id=product_id, role="user"
+            )
+
+            product.item_sold(-quantity)
+            product.increase_item_qty(quantity)
+
+            if commit:
+                self.db.session.commit()
+
+            return {
+                "message": "Product stock and sold quantity updated successfully"
+            }, 200
+        except ValueError as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 500

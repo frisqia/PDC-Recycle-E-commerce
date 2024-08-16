@@ -3,6 +3,8 @@ from .transactions_repository import TransactionsRepository
 from .transactions_service import TransactionsService
 from ..sellers.sellers_service import SellersServices
 from ..users.users_services import UserServices
+from ..products.products_services import ProductsServices
+from ..product_orders.product_orders_service import ProductOrdersService
 
 
 class TransactionsDeleteRead:
@@ -13,12 +15,16 @@ class TransactionsDeleteRead:
         transaction_service=None,
         seller_service=None,
         user_service=None,
+        product_serivce=None,
+        product_order_service=None,
     ):
         self.db = db
         self.repository = repository or TransactionsRepository()
         self.transaction_service = transaction_service or TransactionsService()
         self.seller_service = seller_service or SellersServices()
         self.user_service = user_service or UserServices()
+        self.product_service = product_serivce or ProductsServices()
+        self.product_order_service = product_order_service or ProductOrdersService()
 
     def list_transactions(self, identity, req):
         try:
@@ -55,7 +61,7 @@ class TransactionsDeleteRead:
 
     def cancel_transaction(self, identity, transaction_id):
         try:
-            detail = self.check_role(identity=identity)
+            self.check_role(identity=identity)
             role = identity.get("role")
             role_id = identity.get("id")
 
@@ -67,9 +73,9 @@ class TransactionsDeleteRead:
                 raise ValueError("Transaction not found")
 
             if role == "user":
-                self.canceled_by_user(transaction=transaction, user_detail=detail)
+                self.canceled_by_user(transaction=transaction)
             if role == "seller":
-                self.canceled_by_seller(transaction=transaction, seller_detail=detail)
+                self.canceled_by_seller(transaction=transaction)
 
             self.db.session.commit()
             return {"message": "Transaction canceled successfully"}, 200
@@ -91,8 +97,6 @@ class TransactionsDeleteRead:
         if status_code != 200:
             raise ValueError(detail["error"])
 
-        return detail
-
     def response(self, transactions):
         return {
             "transactions": [transaction.to_dict() for transaction in transactions],
@@ -101,7 +105,7 @@ class TransactionsDeleteRead:
             "total_items": transactions.total,
         }
 
-    def canceled_by_user(self, transaction, user_detail, role="user"):
+    def canceled_by_user(self, transaction, role="user"):
         status = transaction.transaction_status
         if status == 1:
             transaction.canceled_transaction(role=role)
@@ -111,14 +115,8 @@ class TransactionsDeleteRead:
             transaction_gross_amount = transaction.gross_amount
             user_id = transaction.user_id
 
-            refund, status_code = self.user_service.refund(
-                user_id=user_id, amount=transaction_gross_amount, commit=False
-            )
-
-            if status_code != 200:
-                raise ValueError(
-                    f"{refund['error']} while trying to refund balance to user"
-                )
+            self.refund_user(user_id=user_id, amount=transaction_gross_amount)
+            self.product_cancelled_modification(transaction_id=transaction.id)
 
         if status == 3:
             raise ValueError(
@@ -134,21 +132,15 @@ class TransactionsDeleteRead:
         if status == 6:
             raise ValueError("Transaction has been canceled.")
 
-    def canceled_by_seller(self, transaction, seller_detail, role="seller"):
+    def canceled_by_seller(self, transaction, role="seller"):
         status = transaction.transaction_status
         if status in [2, 3]:
             transaction.canceled_transaction(role=role)
             transaction_gross_amount = transaction.gross_amount
             user_id = transaction.user_id
 
-            refund, status_code = self.user_service.refund(
-                user_id=user_id, amount=transaction_gross_amount, commit=False
-            )
-
-            if status_code != 200:
-                raise ValueError(
-                    f"{refund['error']} while trying to refund balance to user"
-                )
+        self.refund_user(user_id=user_id, amount=transaction_gross_amount)
+        self.product_cancelled_modification(transaction_id=transaction.id)
 
         if status == 4:
             raise ValueError("Items on delivery. Transaction can't be canceled")
@@ -158,3 +150,34 @@ class TransactionsDeleteRead:
 
         if status == 6:
             raise ValueError("Transaction has been canceled.")
+        
+    def refund_user(self, user_id, amount):
+        message, status_code = self.user_service.refund(
+            user_id=user_id, amount=amount, commit=False
+        )
+
+        if status_code != 200:
+            raise ValueError(f"{message["error"]} while trying to refund balance to user")
+
+    def product_cancelled_modification(self, transaction_id):
+        product_orders, status_code = (
+            self.product_order_service.get_product_orders_by_transaction_id(
+                transaction_id=transaction_id
+            )
+        )
+
+        if status_code != 200:
+            raise ValueError(product_orders["error"])
+
+        for product in product_orders:
+            product_id = product["product_id"]
+            quantity = product["quantity"]
+
+            message, status_code = (
+                self.product_service.transaction_canceled_modification(
+                    product_id=product_id, quantity=quantity, commit=False
+                )
+            )
+
+            if status_code != 200:
+                raise ValueError(message["error"])

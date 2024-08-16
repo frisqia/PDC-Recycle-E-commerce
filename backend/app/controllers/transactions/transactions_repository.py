@@ -33,4 +33,11 @@ class TransactionsRepository:
         return self.transaction.query.filter_by(parent_id=parent_id).all()
 
     def get_transaction_by_id(self, transaction_id, role, role_id):
-        return self.transaction.query.filter_by(id=transaction_id).first()
+        query = self.transaction.query.filter_by(id=transaction_id)
+
+        if role == "user":
+            query = query.filter_by(user_id=role_id)
+        if role == "seller":
+            query = query.filter_by(seller_id=role_id)
+
+        return query.first()
