@@ -37,10 +37,7 @@ class TransactionsDeleteRead:
             role = identity.get("role")
             role_id = identity.get("id")
 
-            if role == "user":
-                self.transaction_service.check_user(identity)
-            if role == "seller":
-                self.check_seller(identity)
+            self.check_role(identity=identity)
 
             transactions = self.repository.get_transaction_by_user_id(
                 role=role,
