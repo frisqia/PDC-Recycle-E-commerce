@@ -68,7 +68,7 @@ class MidtransService:
             all_final_price += details["final_price"]
             shipment_costs += details["shipment_fee"]
 
-            if details["total_discount"]:
+            if details.get("total_discount", None):
                 total_discount += details["total_discount"]
 
             for detail in details["items"]:
@@ -90,14 +90,15 @@ class MidtransService:
             }
         )
 
-        item_details.append(
-            {
-                "id": "DISCOUNT",
-                "price": -total_discount,
-                "quantity": 1,
-                "name": "DISCOUNT",
-            }
-        )
+        if total_discount > 0:
+            item_details.append(
+                {
+                    "id": "DISCOUNT",
+                    "price": -total_discount,
+                    "quantity": 1,
+                    "name": "DISCOUNT",
+                }
+            )
 
         return {
             "item_details": item_details,
