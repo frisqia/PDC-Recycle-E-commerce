@@ -43,11 +43,11 @@ class CartsService:
                 if status_code != 200:
                     raise ValueError(f"Product {item['product_id']} not found")
 
-                sub_total = product_detail.price * item["quantity"]
+                sub_total = product_detail["price"] * item["quantity"]
 
                 items_with_price["items"].append(
                     {
-                        "detail_product": product_detail.to_cart(),
+                        "detail_product": product_detail,
                         "quantity": item["quantity"],
                         "sub_total": sub_total,
                     }
