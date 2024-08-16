@@ -30,6 +30,7 @@ class Users(db.Model, UserMixin):
     updated_at = Column(
         DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
     )
+    balance = Column(Integer, default=0, nullable=False)
 
     user_seller_vouchers = relationship("UserSellerVouchers", backref="user")
     transactions = relationship("Transactions", backref="user")
@@ -63,3 +64,6 @@ class Users(db.Model, UserMixin):
 
     def delete_user(self):
         self.is_active = Is_Active_Status.INACTIVE.value
+
+    def refund(self, amount):
+        self.balance += amount

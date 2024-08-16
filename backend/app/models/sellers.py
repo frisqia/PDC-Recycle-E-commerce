@@ -22,7 +22,6 @@ class Sellers(db.Model):
     phone_number = Column(VARCHAR(14), unique=True, nullable=False)
     store_name = Column(VARCHAR(30), unique=True, nullable=False)
     store_description = Column(TEXT, nullable=True)
-
     store_image_url = Column(VARCHAR(255), nullable=True)
     is_active = Column(
         SmallInteger, default=Is_Active_Status.ACTIVE.value, nullable=False
@@ -33,6 +32,7 @@ class Sellers(db.Model):
     updated_at = Column(
         DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
     )
+    balance = Column(Integer, default=0, nullable=False)
 
     shipping_options = relationship("ShippingOptions", backref="seller_shippingoptions")
     seller_vouchers = relationship("SellerVouchers", backref="seller_selllervouchers")
@@ -69,3 +69,6 @@ class Sellers(db.Model):
 
     def delete_seller(self):
         self.is_active = Is_Active_Status.INACTIVE.value
+
+    def add_balance(self, amount):
+        self.balance += amount

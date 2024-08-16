@@ -5,8 +5,10 @@ from flasgger import swag_from
 from . import transactions_blueprint
 from .transactions_service import TransactionsService
 from .transactions_midtrans import MidtransConfirmation
+from .transactions_service_read_delete import TransactionsDeleteRead
 
 service = TransactionsService()
+read_delete_service = TransactionsDeleteRead()
 midtrans_confirmation = MidtransConfirmation()
 
 
@@ -25,10 +27,19 @@ def transaction_create():
 def transaction_list():
     identity = get_jwt_identity()
     req = request
-    return service.list_transactions(identity, req)
+    return read_delete_service.list_transactions(identity, req)
 
 
 @transactions_blueprint.route("/confirmation", methods=["POST"])
 def midtrans_webhook():
     data = request.get_json()
     return midtrans_confirmation.midtrans_confirmation(data)
+
+
+@transactions_blueprint.route("/cancel/<transaction_id>", methods=["POST"])
+@jwt_required()
+def cancel_transaction(transaction_id):
+    identity = get_jwt_identity()
+    return read_delete_service.cancel_transaction(
+        transaction_id=transaction_id, identity=identity
+    )

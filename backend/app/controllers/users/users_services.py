@@ -225,3 +225,23 @@ class UserServices:
         except Exception as e:
             self.db.session.rollback()
             return {"error": str(e)}, 500
+
+    def refund(self, user_id, amount, commit=True):
+        try:
+            user = self.repository.get_user_by_id(id=user_id)
+
+            user.refund(amount)
+
+            if commit:
+                self.db.session.commit()
+
+            return {"message": "Refund success"}, 200
+
+        except ValueError as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 500

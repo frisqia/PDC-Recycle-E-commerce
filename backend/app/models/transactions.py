@@ -52,6 +52,8 @@ class Transactions(db.Model):
     updated_at = Column(
         DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
     )
+    information = Column(VARCHAR(30), nullable=True)
+    gross_amount = Column(Integer, nullable=False)
 
     # reviews = relationship("Reviews", backref="transaction_reviews")
 
@@ -65,6 +67,7 @@ class Transactions(db.Model):
         user_seller_voucher_id,
         total_discount,
         parent_id,
+        gross_amount,
         payment_link=None,
     ):
         self.id = id
@@ -74,6 +77,7 @@ class Transactions(db.Model):
         self.total_discount = total_discount
         self.parent_id = parent_id
         self.payment_link = payment_link
+        self.gross_amount = gross_amount
 
     def to_dict(self):
         seller = self.seller_transactions.to_dict()
@@ -92,10 +96,17 @@ class Transactions(db.Model):
             "seller_info": seller_info,
             "user_seller_voucher_id": self.user_seller_voucher_id,
             "total_discount": self.total_discount,
+            "gross_amount": self.gross_amount,
             "transaction_status": self.transaction_status,
             "transaction_status_name": transaction_status(self.transaction_status).name,
             "product_orders": product_info,
             "payment_link": self.payment_link,
+            "information": self.information,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
+
+    def canceled_transaction(self, role):
+        self.transaction_status = transaction_status.CANCELED.value
+        self.information = f"Canceled By {role}"
+        self.payment_link = None

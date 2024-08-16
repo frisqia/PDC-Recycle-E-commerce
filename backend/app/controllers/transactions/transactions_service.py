@@ -37,31 +37,6 @@ class TransactionsService:
             transaction_voucher_service or TransactionsVoucherService()
         )
 
-    def list_transactions(self, identity, req):
-        try:
-            tx = req.args.get("tx", None)
-            role = identity.get("role")
-            role_id = identity.get("id")
-
-            if role == "user":
-                self.check_user(identity)
-            if role == "seller":
-                self.check_seller
-
-            transactions = self.repository.get_transaction_by_user_id(
-                role=role, role_id=role_id, tx=tx
-            )
-
-            if not transactions:
-                raise ValueError("No transactions found")
-
-            return [transaction.to_dict() for transaction in transactions], 200
-
-        except ValueError as e:
-            return {"error": str(e)}, 400
-        except Exception as e:
-            return {"error": str(e)}, 500
-
     def create_transaction(self, data, identity):
         try:
             self.check_data(data)
@@ -102,6 +77,7 @@ class TransactionsService:
                 transaction_details["id"] = transaction_id
                 transaction_details["parent_id"] = parent_id
                 transaction_details["payment_link"] = response["redirect_url"]
+                transaction_details["gross_amount"] = details.get("final_price")
 
                 new_transaction = self.repository.create_transaction(
                     transaction_details
