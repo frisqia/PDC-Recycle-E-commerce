@@ -6,10 +6,12 @@ from . import transactions_blueprint
 from .transactions_service import TransactionsService
 from .transactions_midtrans import MidtransConfirmation
 from .transactions_service_read_delete import TransactionsDeleteRead
+from .transaction_service_update import TransactionServiceUpdate
 
 service = TransactionsService()
 read_delete_service = TransactionsDeleteRead()
 midtrans_confirmation = MidtransConfirmation()
+update_service = TransactionServiceUpdate()
 
 
 @transactions_blueprint.route("/create", methods=["POST"])
@@ -42,4 +44,13 @@ def cancel_transaction(transaction_id):
     identity = get_jwt_identity()
     return read_delete_service.cancel_transaction(
         transaction_id=transaction_id, identity=identity
+    )
+
+
+@transactions_blueprint.route("/prepared/<transaction_id>", methods=["PUT"])
+@jwt_required()
+def update_transaction(transaction_id):
+    identity = get_jwt_identity()
+    return update_service.change_to_prepared(
+        identity=identity, transaction_id=transaction_id
     )

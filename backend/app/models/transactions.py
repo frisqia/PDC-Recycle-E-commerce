@@ -112,3 +112,6 @@ class Transactions(db.Model):
         self.transaction_status = transaction_status.CANCELED.value
         self.information = f"Canceled By {role}"
         self.payment_link = None
+
+    def change_to_prepared(self):
+        self.transaction_status = transaction_status.PREPARED_BY_SELLER.value
