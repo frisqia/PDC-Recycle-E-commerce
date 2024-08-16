@@ -11,6 +11,8 @@ class ShipmentDetails(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     transaction_id = Column(VARCHAR(30), ForeignKey("transactions.id"), nullable=False)
+    seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     seller_address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     user_address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     shipment_id = Column(Integer, ForeignKey("shipments.id"), nullable=False)
@@ -35,6 +37,8 @@ class ShipmentDetails(db.Model):
         service,
         shipment_cost,
         total_weight_gram,
+        user_id,
+        seller_id,
         tracking_number=None,
         shipment_status=None,
     ):
@@ -47,6 +51,8 @@ class ShipmentDetails(db.Model):
         self.shipment_cost = shipment_cost
         self.total_weight_gram = total_weight_gram
         self.shipment_status = shipment_status
+        self.user_id = user_id
+        self.seller_id = seller_id
 
     def to_dict(self):
         return {

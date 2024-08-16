@@ -96,6 +96,8 @@ class TransactionsService:
                         data=details,
                         user_address_id=data.get("user_selected_address_id"),
                         transaction_id=transaction_id,
+                        seller_id=seller_id,
+                        user_id=user_id,
                     )
                 )
 
