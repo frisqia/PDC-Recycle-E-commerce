@@ -73,7 +73,7 @@ class ProductsRepository:
             query = query.order_by(self.product.price.desc())
         if date == "newest":
             query = query.order_by(self.product.created_at.desc())
-        if date == "latest":
+        if date == "oldest":
             query = query.order_by(self.product.created_at.asc())
         if province_id:
             query = (
