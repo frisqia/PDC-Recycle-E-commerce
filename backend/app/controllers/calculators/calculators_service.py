@@ -100,28 +100,35 @@ class CalculatorsService:
                 calculated_product_detail=calculated_product_detail
             )
 
-            return final_calculation, 200
+            return {
+                "final_calculation": final_calculation["final_calculation"],
+                "all_final_price": final_calculation["all_final_price"],
+            }, 200
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
             return {"error": str(e)}, 500
 
     def calculate_final_price(self, calculated_product_detail):
+        all_final_price = 0
+
         for key, value in calculated_product_detail.items():
-            if not value.get("shipment_fee", None) or not value.get(
-                "total_discount", None
-            ):
+            if not value.get("shipment_fee", None):
                 return calculated_product_detail
 
             total_price_before_shipment = int(value["total_price_before_shipment"])
             shipment_fee = int(value["shipment_fee"])
-            total_discount = int(value["total_discount"])
+            total_discount = int(value.get("total_discount", 0))
 
             value["final_price"] = (
                 total_price_before_shipment + shipment_fee - total_discount
             )
+            all_final_price += value["final_price"]
 
-        return calculated_product_detail
+        return {
+            "final_calculation": calculated_product_detail,
+            "all_final_price": all_final_price,
+        }
 
     def initial_verification(self, role, carts, user_id):
         if role != "user":

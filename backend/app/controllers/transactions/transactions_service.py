@@ -73,6 +73,8 @@ class TransactionsService:
             if status_code != 200:
                 raise ValueError(calculator_data["error"])
 
+            calculator_data = calculator_data.get("final_calculation")
+
             parent_id = self.generate_parent_transaction_id()
 
             response = self.midtrans_service.create_transaction(
@@ -87,15 +89,23 @@ class TransactionsService:
                 transaction_id = self.generate_transaction_id()
 
                 # create transaction
-                specific_data = self.get_specific_data(details)
+                transaction_details = {}
 
-                specific_data["user_id"] = user_id
-                specific_data["seller_id"] = seller_id
-                specific_data["id"] = transaction_id
-                specific_data["parent_id"] = parent_id
-                specific_data["payment_link"] = response["redirect_url"]
+                transaction_details["user_seller_voucher_id"] = details.get(
+                    "user_seller_voucher_id", None
+                )
+                transaction_details["total_discount"] = details.get(
+                    "total_discount", None
+                )
+                transaction_details["user_id"] = user_id
+                transaction_details["seller_id"] = seller_id
+                transaction_details["id"] = transaction_id
+                transaction_details["parent_id"] = parent_id
+                transaction_details["payment_link"] = response["redirect_url"]
 
-                new_transaction = self.repository.create_transaction(specific_data)
+                new_transaction = self.repository.create_transaction(
+                    transaction_details
+                )
 
                 self.db.session.add(new_transaction)
 
@@ -107,9 +117,11 @@ class TransactionsService:
                 if product_order[1] not in [200, 201]:
                     raise ValueError(product_order[0]["error"])
 
-            self.transaction_voucher_service.used_user_seller_voucher(
-                identity=identity, data=data
-            )
+            if data.get("selected_user_voucher_ids", None):
+                self.transaction_voucher_service.used_user_seller_voucher(
+                    identity=identity, data=data
+                )
+
             self.db.session.commit()
 
             return {
@@ -156,14 +168,6 @@ class TransactionsService:
 
         if not selected_courier or len(selected_courier) <= 0:
             raise ValueError("Selected courier not found")
-
-    def get_specific_data(self, details):
-        specific_data = {}
-
-        specific_data["user_seller_voucher_id"] = details.get("user_seller_voucher_id")
-        specific_data["total_discount"] = details.get("total_discount")
-
-        return specific_data
 
     def generate_transaction_id(self):
         prefix = "TRX"
