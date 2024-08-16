@@ -35,7 +35,6 @@ class Transactions(db.Model):
     user_seller_voucher_id = Column(
         Integer, ForeignKey("user_seller_vouchers.id"), nullable=True
     )
-    # shipment detail
     payment_details_id = Column(
         Integer, ForeignKey("payment_details.id"), nullable=True
     )
@@ -57,6 +56,9 @@ class Transactions(db.Model):
 
     # reviews = relationship("Reviews", backref="transaction_reviews")
 
+    shipment_details = db.relationship(
+        "ShipmentDetails", backref="transaction_shipment_detail"
+    )
     product_orders = db.relationship("ProductOrders", backref="transaction_orders")
 
     def __init__(

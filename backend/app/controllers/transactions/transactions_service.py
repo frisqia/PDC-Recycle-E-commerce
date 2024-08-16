@@ -7,6 +7,7 @@ from ..calculators.calculators_service import CalculatorsService
 from .transactions_midtrans import MidtransConfirmation
 from ..midtrans.midtrans_service import MidtransService
 from .transactions_voucher import TransactionsVoucherService
+from ..shipment_details.shipment_details_service import ShipmentDetailsService
 
 from datetime import datetime
 import uuid
@@ -24,6 +25,7 @@ class TransactionsService:
         midtrans_confirmation=None,
         midtrans_service=None,
         transaction_voucher_service=None,
+        shipment_details_service=None,
     ):
         self.db = db
         self.repository = repository or TransactionsRepository()
@@ -35,6 +37,9 @@ class TransactionsService:
         self.midtrans_service = midtrans_service or MidtransService()
         self.transaction_voucher_service = (
             transaction_voucher_service or TransactionsVoucherService()
+        )
+        self.shipment_details_service = (
+            shipment_details_service or ShipmentDetailsService()
         )
 
     def create_transaction(self, data, identity):
@@ -85,13 +90,27 @@ class TransactionsService:
 
                 self.db.session.add(new_transaction)
 
-                # create product_order
-                product_order = self.product_order_service.create_product_order(
-                    data=details, transaction_id=transaction_id, commit=False
+                # create shipment_details
+                shipment_details, status_code = (
+                    self.shipment_details_service.create_detail(
+                        data=details,
+                        user_address_id=data.get("user_selected_address_id"),
+                        transaction_id=transaction_id,
+                    )
                 )
 
-                if product_order[1] not in [200, 201]:
-                    raise ValueError(product_order[0]["error"])
+                if status_code != 201:
+                    raise ValueError(shipment_details["error"])
+
+                # create product_order
+                product_order, status_code = (
+                    self.product_order_service.create_product_order(
+                        data=details, transaction_id=transaction_id, commit=False
+                    )
+                )
+
+                if status_code not in [200, 201]:
+                    raise ValueError(product_order["error"])
 
             if data.get("selected_user_voucher_ids", None):
                 self.transaction_voucher_service.used_user_seller_voucher(
