@@ -1,16 +1,25 @@
 from app.db import db
 from .shipment_details_repository import ShipmentDetailsRepository
 from ..shipments.shipments_service import ShipmentsService
+from ..sellers.sellers_service import SellersServices
 
 
 class ShipmentDetailsService:
 
-    def __init__(self, db=db, repository=None):
+    def __init__(
+        self,
+        db=db,
+        seller_service=None,
+        shipment_service=None,
+        repository=None,
+        transaction_service_update=None,
+    ):
         self.db = db
         self.repository = repository or ShipmentDetailsRepository()
-        self.shipment_service = ShipmentsService()
+        self.shipment_service = shipment_service or ShipmentsService()
+        self.seller_service = seller_service or SellersServices()
 
-    def create_detail(self, data, user_address_id, transaction_id):
+    def create_detail(self, data, user_address_id, transaction_id, user_id, seller_id):
         try:
             shipments = self.shipment_service.list_shipments()
             shipments = {
@@ -33,6 +42,8 @@ class ShipmentDetailsService:
                     "total_weight_gram": total_weight_gram,
                     "user_address_id": user_address_id,
                     "shipment_id": shipment_id,
+                    "user_id": user_id,
+                    "seller_id": seller_id,
                 },
             )
 
@@ -42,8 +53,10 @@ class ShipmentDetailsService:
             return {"message": "Shipment detail created successfully"}, 201
 
         except ValueError as e:
+            self.db.session.rollback()
             return {"error": str(e)}, 400
         except Exception as e:
+            self.db.session.rollback()
             return {"error": str(e)}, 500
 
     def delete_detail(self, transaction_id):
@@ -53,6 +66,31 @@ class ShipmentDetailsService:
             self.db.session.commit()
             return {"message": "Shipment detail deleted successfully"}, 200
         except ValueError as e:
+            self.db.session.rollback()
             return {"error": str(e)}, 400
         except Exception as e:
+            self.db.session.rollback()
+            return {"error": str(e)}, 500
+
+    def update_tracking_number(self, seller_id, transaction_id, tracking_number):
+        try:
+            shipment_detail = self.repository.get_by_seller_and_transaction(
+                seller_id=seller_id, transaction_id=transaction_id
+            )
+
+            if not shipment_detail:
+                raise ValueError("Shipment detail not found")
+            if shipment_detail.tracking_number:
+                raise ValueError("Shipment detail already has a tracking number")
+
+            shipment_detail.tracking_number = tracking_number
+            self.db.session.commit()
+
+            return {"message": "Shipment detail updated successfully"}, 200
+
+        except ValueError as e:
+            self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            self.db.session.rollback()
             return {"error": str(e)}, 500

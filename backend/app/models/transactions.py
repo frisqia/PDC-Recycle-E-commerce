@@ -115,3 +115,6 @@ class Transactions(db.Model):
 
     def change_to_prepared(self):
         self.transaction_status = transaction_status.PREPARED_BY_SELLER.value
+
+    def change_to_on_delivery(self):
+        self.transaction_status = transaction_status.ON_DELIVERY.value

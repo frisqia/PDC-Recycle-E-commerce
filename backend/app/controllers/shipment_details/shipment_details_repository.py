@@ -12,6 +12,9 @@ class ShipmentDetailsRepository:
         return self.shipment_details(**data)
 
     def delete_shipment_detail(self, transaction_id):
-        self.db.session.query(self.shipment_details).filter(
-            self.shipment_details.transaction_id == transaction_id
-        ).delete()
+        self.shipment_details.query.filter_by(transaction_id=transaction_id).delete()
+
+    def get_by_seller_and_transaction(self, seller_id, transaction_id):
+        return self.shipment_details.query.filter_by(
+            seller_id=seller_id, transaction_id=transaction_id
+        ).first()

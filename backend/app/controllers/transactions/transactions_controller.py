@@ -6,7 +6,7 @@ from . import transactions_blueprint
 from .transactions_service import TransactionsService
 from .transactions_midtrans import MidtransConfirmation
 from .transactions_service_read_delete import TransactionsDeleteRead
-from .transaction_service_update import TransactionServiceUpdate
+from .transactions_service_update import TransactionServiceUpdate
 
 service = TransactionsService()
 read_delete_service = TransactionsDeleteRead()
@@ -53,4 +53,14 @@ def update_transaction(transaction_id):
     identity = get_jwt_identity()
     return update_service.change_to_prepared(
         identity=identity, transaction_id=transaction_id
+    )
+
+
+@transactions_blueprint.route("/ondelivery/<transaction_id>", methods=["PUT"])
+@jwt_required()
+def update_transaction_ondelivery(transaction_id):
+    identity = get_jwt_identity()
+    data = request.get_json()
+    return update_service.update_tracking_number(
+        identity=identity, transaction_id=transaction_id, data=data
     )
