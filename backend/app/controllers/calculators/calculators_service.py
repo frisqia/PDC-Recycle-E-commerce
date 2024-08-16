@@ -101,8 +101,8 @@ class CalculatorsService:
             )
 
             return {
-                "final_calculation": final_calculation["final_calculation"],
-                "all_final_price": final_calculation["all_final_price"],
+                "final_calculation": final_calculation.get("final_calculation"),
+                "all_final_price": final_calculation.get("all_final_price", None),
             }, 200
         except ValueError as e:
             return {"error": str(e)}, 400
@@ -114,7 +114,7 @@ class CalculatorsService:
 
         for key, value in calculated_product_detail.items():
             if not value.get("shipment_fee", None):
-                return calculated_product_detail
+                return {"final_calculation": calculated_product_detail}
 
             total_price_before_shipment = int(value["total_price_before_shipment"])
             shipment_fee = int(value["shipment_fee"])
