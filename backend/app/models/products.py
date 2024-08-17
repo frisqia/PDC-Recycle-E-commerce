@@ -94,7 +94,7 @@ class Products(db.Model):
         seller = self.seller_products.to_dict()
         seller_info = {
             "store_name": seller["store_name"],
-            "store_immage_url": seller["store_image_url"],
+            "store_image_url": seller["store_image_url"],
             "store_district": seller["addresses"][0]["district_name"],
         }
 
