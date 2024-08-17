@@ -84,6 +84,7 @@ class ShipmentDetailsService:
                 raise ValueError("Shipment detail already has a tracking number")
 
             shipment_detail.tracking_number = tracking_number
+            shipment_detail.shipment_to_ondelivery()
             self.db.session.commit()
 
             return {"message": "Shipment detail updated successfully"}, 200

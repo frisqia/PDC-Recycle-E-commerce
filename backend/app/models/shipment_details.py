@@ -1,9 +1,16 @@
 from sqlalchemy import Column, Integer, DateTime, VARCHAR, ForeignKey, Text
 from datetime import datetime
 import pytz
+from enum import Enum
 
 
 from ..db import db
+
+
+class shipment_status(Enum):
+    PENDING = "pending"
+    ONDELIVERY = "ondelivery"
+    DELIVERED = "delivered"
 
 
 class ShipmentDetails(db.Model):
@@ -59,3 +66,12 @@ class ShipmentDetails(db.Model):
             "id": self.id,
             "tracking_number": self.tracking_number,
         }
+
+    def shipment_to_pending(self):
+        self.shipment_status = shipment_status.PENDING.value
+
+    def shipment_to_ondelivery(self):
+        self.shipment_status = shipment_status.ONDELIVERY.value
+
+    def shipment_to_delivered(self):
+        self.shipment_status = shipment_status.DELIVERED.value
