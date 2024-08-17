@@ -118,3 +118,6 @@ class Transactions(db.Model):
 
     def change_to_on_delivery(self):
         self.transaction_status = transaction_status.ON_DELIVERY.value
+
+    def change_to_delivered(self):
+        self.transaction_status = transaction_status.DELIVERED.value

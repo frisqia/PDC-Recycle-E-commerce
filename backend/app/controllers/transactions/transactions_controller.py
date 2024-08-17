@@ -64,3 +64,12 @@ def update_transaction_ondelivery(transaction_id):
     return update_service.update_tracking_number(
         identity=identity, transaction_id=transaction_id, data=data
     )
+
+
+@transactions_blueprint.route("/delivered/<transaction_id>", methods=["PUT"])
+@jwt_required()
+def update_transaction_delivered(transaction_id):
+    identity = get_jwt_identity()
+    return update_service.update_to_delivered(
+        identity=identity, transaction_id=transaction_id
+    )

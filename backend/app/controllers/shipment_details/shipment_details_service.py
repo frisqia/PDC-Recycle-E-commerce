@@ -95,3 +95,25 @@ class ShipmentDetailsService:
         except Exception as e:
             self.db.session.rollback()
             return {"error": str(e)}, 500
+
+    def update_to_delivered(self, user_id, transaction_id):
+        try:
+            shipment_detail = self.repository.get_by_user_and_transaction(
+                user_id=user_id, transaction_id=transaction_id
+            )
+
+            if not shipment_detail:
+                raise ValueError("Shipment detail not found")
+            if not shipment_detail.shipment_status:
+                raise ValueError("Package is not on delivery yet")
+            if shipment_detail.shipment_status == "delivered":
+                raise ValueError("Package is already delivered")
+
+            shipment_detail.shipment_to_delivered()
+
+            return {"message": "Shipment detail updated successfully"}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500

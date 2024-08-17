@@ -18,3 +18,8 @@ class ShipmentDetailsRepository:
         return self.shipment_details.query.filter_by(
             seller_id=seller_id, transaction_id=transaction_id
         ).first()
+
+    def get_by_user_and_transaction(self, user_id, transaction_id):
+        return self.shipment_details.query.filter_by(
+            user_id=user_id, transaction_id=transaction_id
+        ).first()
