@@ -18,7 +18,9 @@ class TransactionsRepository:
         if role == "user":
             query = query.filter_by(user_id=role_id)
         if role == "seller":
-            query = query.filter_by(seller_id=role_id)
+            query = query.filter_by(seller_id=role_id).filter(
+                Transactions.transaction_status != 1
+            )
 
         if tx:
             query = query.filter_by(id=tx)
