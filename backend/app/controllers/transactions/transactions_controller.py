@@ -40,6 +40,7 @@ def midtrans_webhook():
 
 @transactions_blueprint.route("/cancel/<transaction_id>", methods=["POST"])
 @jwt_required()
+@swag_from("./transactions_cancel.yml")
 def cancel_transaction(transaction_id):
     identity = get_jwt_identity()
     return read_delete_service.cancel_transaction(
@@ -49,6 +50,7 @@ def cancel_transaction(transaction_id):
 
 @transactions_blueprint.route("/prepared/<transaction_id>", methods=["PUT"])
 @jwt_required()
+@swag_from("./transaction_prepared.yml")
 def update_transaction(transaction_id):
     identity = get_jwt_identity()
     return update_service.change_to_prepared(
@@ -58,6 +60,7 @@ def update_transaction(transaction_id):
 
 @transactions_blueprint.route("/ondelivery/<transaction_id>", methods=["PUT"])
 @jwt_required()
+@swag_from("./transaction_ondelivery.yml")
 def update_transaction_ondelivery(transaction_id):
     identity = get_jwt_identity()
     data = request.get_json()
@@ -68,6 +71,7 @@ def update_transaction_ondelivery(transaction_id):
 
 @transactions_blueprint.route("/delivered/<transaction_id>", methods=["PUT"])
 @jwt_required()
+@swag_from("./transaction_delivered.yml")
 def update_transaction_delivered(transaction_id):
     identity = get_jwt_identity()
     return update_service.update_to_delivered(
@@ -77,6 +81,7 @@ def update_transaction_delivered(transaction_id):
 
 @transactions_blueprint.route("/review/<transaction_id>", methods=["POST"])
 @jwt_required()
+@swag_from("./transaction_review.yml")
 def create_review(transaction_id):
     data = request.get_json()
     identity = get_jwt_identity()

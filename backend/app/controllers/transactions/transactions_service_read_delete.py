@@ -138,13 +138,15 @@ class TransactionsDeleteRead:
 
     def canceled_by_seller(self, transaction, role="seller"):
         status = transaction.transaction_status
+        if status == 1:
+            raise ValueError("Seller can't cancel an unpaid transaction")
         if status in [2, 3]:
             transaction.canceled_transaction(role=role)
             transaction_gross_amount = transaction.gross_amount
             user_id = transaction.user_id
 
-        self.refund_user(user_id=user_id, amount=transaction_gross_amount)
-        self.product_cancelled_modification(transaction_id=transaction.id)
+            self.refund_user(user_id=user_id, amount=transaction_gross_amount)
+            self.product_cancelled_modification(transaction_id=transaction.id)
 
         if status == 4:
             raise ValueError("Items on delivery. Transaction can't be canceled")
