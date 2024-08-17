@@ -54,8 +54,6 @@ class Transactions(db.Model):
     information = Column(VARCHAR(30), nullable=True)
     gross_amount = Column(Integer, nullable=False)
 
-    # reviews = relationship("Reviews", backref="transaction_reviews")
-
     shipment_details = db.relationship(
         "ShipmentDetails", backref="transaction_shipment_detail"
     )

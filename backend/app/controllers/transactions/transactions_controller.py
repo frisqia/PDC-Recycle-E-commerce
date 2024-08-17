@@ -73,3 +73,13 @@ def update_transaction_delivered(transaction_id):
     return update_service.update_to_delivered(
         identity=identity, transaction_id=transaction_id
     )
+
+
+@transactions_blueprint.route("/review/<transaction_id>", methods=["POST"])
+@jwt_required()
+def create_review(transaction_id):
+    data = request.get_json()
+    identity = get_jwt_identity()
+    return update_service.create_review(
+        data=data, transaction_id=transaction_id, identity=identity
+    )
