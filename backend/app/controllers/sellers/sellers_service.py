@@ -319,3 +319,17 @@ class SellersServices:
                 raise e
             except Exception as e:
                 raise e
+
+    def add_balanced_transaction_delivered(self, seller_id, amount):
+        try:
+            seller = self.repository.get_seller_by_id(seller_id)
+
+            if not seller:
+                raise ValueError("Seller not found")
+
+            seller.add_balance(amount)
+
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise e

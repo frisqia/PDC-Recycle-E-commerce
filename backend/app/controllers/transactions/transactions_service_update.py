@@ -90,6 +90,10 @@ class TransactionServiceUpdate:
                 transaction_id=transaction_id, role="user", role_id=role_id
             )
 
+            self.seller_service.add_balanced_transaction_delivered(
+                seller_id=transaction.seller_id, amount=transaction.gross_amount
+            )
+
             transaction.change_to_delivered()
             self.db.session.commit()
 
