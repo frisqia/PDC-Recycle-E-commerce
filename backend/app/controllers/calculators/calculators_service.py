@@ -154,6 +154,9 @@ class CalculatorsService:
         all_shipment_fee = {}
 
         for courier in selected_courier:
+            seller_ids = calculated_product_detail.keys()
+            if int(courier["seller_id"]) not in seller_ids:
+                raise ValueError(f"selected_courier seller_id {courier["seller_id"]} not in any seller_id of product in cart")
             seller_id = courier["seller_id"]
             seller_address = self.shipment_service.get_seller_address(
                 seller_id=seller_id
