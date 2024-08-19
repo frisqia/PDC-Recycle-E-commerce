@@ -1,4 +1,5 @@
 import os
+import cloudinary
 from flask import Flask
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -70,6 +71,12 @@ def create_app():
     jwt.init_app(app)
     Swagger(app)
     CORS(app)
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    )
 
     with app.app_context():
         db.create_all()

@@ -1,5 +1,6 @@
 from .products_repository import ProductsRepository
 from ..sellers.sellers_service import SellersServices
+from ..cloudinary.cloudinary_service import CloudinaryService
 
 from app.db import db
 from ..common import is_filled, get_data_and_validate
@@ -11,37 +12,43 @@ class ProductsServices:
         db=db,
         repository=None,
         seller_service=None,
+        cloudinary_service=None,
     ):
         self.db = db
         self.repository = repository or ProductsRepository()
         self.seller_service = seller_service or SellersServices()
+        self.cloudinary_service = cloudinary_service or CloudinaryService()
 
     def create_product(self, data, role, role_id):
-        try:
-            seller_info_address = self.check_role_and_id(role, role_id)["seller"][
-                "addresses"
-            ]
+        # try:
+        seller_info_address = self.check_role_and_id(role, role_id)["seller"][
+            "addresses"
+        ]
 
-            if not seller_info_address or len(seller_info_address) <= 0:
-                raise ValueError("Must input an address before creating a product")
+        if not seller_info_address or len(seller_info_address) <= 0:
+            raise ValueError("Must input an address before creating a product")
 
-            all_data = self.all_data(data)
+        all_data = self.all_data(data)
 
-            if not is_filled(**all_data):
-                raise ValueError("Please fill all required fields")
+        if not is_filled(**all_data):
+            raise ValueError("Please fill all required fields")
 
-            new_product = self.repository.create_product(seller_id=role_id, **all_data)
+        images_base64 = data.get("image_url")
+        images_url = self.cloudinary_service.upload_multiple_images(images_base64)
+        all_data["image_url"] = ",".join(images_url)
 
-            self.db.session.add(new_product)
-            self.db.session.commit()
-            return {"message": "Product created successfully"}, 201
+        new_product = self.repository.create_product(seller_id=role_id, **all_data)
 
-        except (TypeError, ValueError) as e:
-            self.db.session.rollback()
-            return {"error": str(e)}, 400
-        except Exception as e:
-            self.db.session.rollback
-            return {"error": str(e)}, 500
+        self.db.session.add(new_product)
+        self.db.session.commit()
+        return {"message": "Product created successfully"}, 201
+
+    # except (TypeError, ValueError) as e:
+    #     self.db.session.rollback()
+    #     return {"error": str(e)}, 400
+    # except Exception as e:
+    #     self.db.session.rollback
+    #     return {"error": str(e)}, 500
 
     def get_list_products(self, request, role, role_id=None):
         self.check_role_and_id(role, role_id)
@@ -156,7 +163,6 @@ class ProductsServices:
             price=int,
             weight_kg=float,
             stock=int,
-            image_url=str,
             product_type=int,
             category_id=int,
             length_cm=int,
