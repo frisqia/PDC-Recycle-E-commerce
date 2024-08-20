@@ -48,15 +48,11 @@ class Sellers(db.Model):
         password,
         phone_number,
         store_name,
-        store_image_url=None,
-        store_image_public_id=None,
     ):
         self.email = email
         self.password = self.set_password(password)
         self.phone_number = phone_number
         self.store_name = store_name
-        self.store_image_url = store_image_url
-        self.store_image_public_id = store_image_public_id
 
     def set_password(self, password):
         return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
