@@ -80,12 +80,6 @@ class UserServices:
             self.db.session.rollback()
             return {"error": str(e)}, 500
 
-    def user_logout(self):
-        try:
-            return {"message": "User logged out successfully"}, 200
-        except Exception as e:
-            return {"error": str(e)}, 500
-
     def user_info(self, user_id):
         try:
             user = self.repository.get_user_by_id(user_id)

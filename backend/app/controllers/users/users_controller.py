@@ -22,12 +22,6 @@ def user_register():
     return service.user_register(data)
 
 
-@users_blueprint.route("/logout", methods=["POST"])
-@swag_from("./user_logout.yml")
-def user_logout():
-    return service.user_logout()
-
-
 @users_blueprint.route("/me", methods=["GET"])
 @jwt_required()
 @swag_from("./user_info.yml")
