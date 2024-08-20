@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.db import db
 from .user_seller_vouchers_repository import UserSellerVouchersRepository
 from ..users.users_repository import UserRepository
@@ -30,13 +32,16 @@ class UserSellerVouchersService:
             ):
                 raise ValueError("Voucher already claimed")
 
+            voucher = self.seller_voucher_repository.get_voucher_only_by_voucher_id(
+                voucher_id=seller_voucher_id
+            )
+
             if (
-                self.seller_voucher_repository.get_voucher_only_by_voucher_id(
-                    voucher_id=seller_voucher_id
-                )
-                is None
+                not voucher
+                or voucher.is_active == 0
+                or voucher.expiry_date < datetime.now()
             ):
-                raise ValueError("Voucher not found")
+                raise ValueError("Voucher not found / expired / not active")
 
             voucher = self.repository.user_save_voucher(
                 user_id=user_id, voucher_id=seller_voucher_id
