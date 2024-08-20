@@ -24,6 +24,19 @@ class ProductsServices:
 
     def create_product(self, data, role, role_id):
         try:
+            keys = [
+                "name",
+                "description",
+                "price",
+                "weight_kg",
+                "stock",
+                "product_type",
+                "category_id",
+                "length_cm",
+                "width_cm",
+                "height_cm",
+            ]
+
             seller_info_address = self.check_role_and_id(role, role_id)["seller"][
                 "addresses"
             ]
@@ -32,19 +45,23 @@ class ProductsServices:
                 raise ValueError("Must input an address before creating a product")
 
             all_data = self.all_data(data)
+            images_base64 = data.get("image_base64", None)
 
             if not is_filled(**all_data):
                 raise ValueError("Please fill all required fields")
+            for key in keys:
+                if key not in all_data:
+                    raise ValueError(f"Please fill {key} field")
+            if not images_base64:
+                raise ValueError("Please upload at least one image")
 
             new_product = self.repository.create_product(seller_id=role_id, **all_data)
 
             self.db.session.add(new_product)
             self.db.session.commit()
 
-            product_id = new_product.id
-            images_base64 = data.get("image_base64")
-
             # save to db and upload to cloudinary
+            product_id = new_product.id
             message, status_code = self.product_images_service.save_image(
                 product_id=product_id, new_images_base64=images_base64
             )
