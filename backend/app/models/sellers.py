@@ -23,6 +23,7 @@ class Sellers(db.Model):
     store_name = Column(VARCHAR(30), unique=True, nullable=False)
     store_description = Column(TEXT, nullable=True)
     store_image_url = Column(VARCHAR(255), nullable=True)
+    store_image_public_id = Column(VARCHAR(255), nullable=True)
     is_active = Column(
         SmallInteger, default=Is_Active_Status.ACTIVE.value, nullable=False
     )
@@ -41,11 +42,21 @@ class Sellers(db.Model):
     reviews = relationship("Reviews", backref="seller_reviews")
     addresses = relationship("Addresses", backref="seller_addresses")
 
-    def __init__(self, email, password, phone_number, store_name):
+    def __init__(
+        self,
+        email,
+        password,
+        phone_number,
+        store_name,
+        store_image_url=None,
+        store_image_public_id=None,
+    ):
         self.email = email
         self.password = self.set_password(password)
         self.phone_number = phone_number
         self.store_name = store_name
+        self.store_image_url = store_image_url
+        self.store_image_public_id = store_image_public_id
 
     def set_password(self, password):
         return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")

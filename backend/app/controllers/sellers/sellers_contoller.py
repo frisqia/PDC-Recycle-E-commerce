@@ -71,3 +71,11 @@ def seller_delete():
     seller_id = identity.get("id")
     data = request.get_json()
     return service.seller_delete(seller_id, data)
+
+
+@sellers_blueprint.route("/deleteimage", methods=["DELETE"])
+@jwt_required()
+@swag_from("./seller_delete_image.yml")
+def seller_delete_image():
+    identity = get_jwt_identity()
+    return service.seller_delete_image(identity=identity)

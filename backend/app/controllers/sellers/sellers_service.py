@@ -4,13 +4,15 @@ from .sellers_repository import SellersRepository
 from ..locations.locations_repository import LocationRepository
 from app.db import db
 from ..common import is_filled, get_data_and_validate
+from ..cloudinary.cloudinary_service import CloudinaryService
 
 
 class SellersServices:
-    def __init__(self, db=db, repository=None, location=None):
+    def __init__(self, db=db, repository=None, location=None, cloudinary_service=None):
         self.repository = repository or SellersRepository()
         self.location = location or LocationRepository()
         self.db = db
+        self.cloudinary_service = cloudinary_service or CloudinaryService()
 
     def seller_login(self, data):
         try:
@@ -113,7 +115,6 @@ class SellersServices:
             **{
                 "store_name": str,
                 "store_description": str,
-                "store_image_url": str,
             },
         )
 
@@ -127,16 +128,28 @@ class SellersServices:
                 if key == "store_name" and data is not None:
                     self.if_exist_raise_error(store_name=data)
 
-                # check if store_subdistrict is exist
-                if key == "store_subdistrict" and data is not None:
-                    if self.location.get_location_by_id(data) is None:
-                        raise ValueError("Store subdistrict not found")
-
                 # update if data is not None and seller has that key
                 if data is not None and hasattr(seller, key):
                     setattr(seller, key, data)
                     count_updated_key += 1
                     key_updated.append(key)
+
+            if data.get("store_image_url", None):
+                if seller.store_image_url:
+                    identity = {"id": seller_id, "role": "seller"}
+                    delete, status_code = self.seller_delete_image(identity=identity)
+
+                    if status_code not in [200, 201]:
+                        raise ValueError("Failed to delete previous image")
+
+                result = self.cloudinary_service.upload_multiple_images(
+                    data["store_image_url"]
+                )
+
+                seller.store_image_url = result[0]["secure_url"]
+                seller.store_image_public_id = result[0]["public_id"]
+                count_updated_key += 1
+                key_updated.append("store_image_url")
 
             if count_updated_key == 0:
                 raise ValueError("No data is updated")
@@ -363,3 +376,34 @@ class SellersServices:
             raise e
         except Exception as e:
             raise e
+
+    def seller_delete_image(self, identity):
+        try:
+            role_id = identity.get("id")
+            role = identity.get("role")
+
+            if role != "seller":
+                raise ValueError("Unauthorized access")
+
+            seller = self.repository.get_seller_by_id(role_id)
+
+            if not seller:
+                raise ValueError("Seller not found")
+
+            public_id = seller.store_image_public_id
+
+            if not public_id:
+                raise ValueError("Seller does not have image")
+
+            self.cloudinary_service.delete_image(public_id)
+            seller.store_image_public_id = None
+            seller.store_image_url = None
+
+            self.db.session.commit()
+
+            return {"message": "Image deleted successfully"}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
