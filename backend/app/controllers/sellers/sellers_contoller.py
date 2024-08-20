@@ -22,12 +22,6 @@ def seller_register():
     return service.seller_register(data)
 
 
-@sellers_blueprint.route("/logout", methods=["POST"])
-@swag_from("./seller_logout.yml")
-def seller_logout():
-    return service.seller_logout()
-
-
 @sellers_blueprint.route("/me", methods=["GET"])
 @jwt_required()
 @swag_from("./seller_info.yml")

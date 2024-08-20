@@ -78,12 +78,6 @@ class SellersServices:
             self.db.session.rollback()
             return {"error": str(e)}, 500
 
-    def seller_logout(self):
-        try:
-            return {"message": "Seller logged out successfully"}, 200
-        except Exception as e:
-            return {"error": str(e)}, 500
-
     def seller_info(self, seller_id):
         try:
             seller = self.repository.get_seller_by_id(seller_id)
