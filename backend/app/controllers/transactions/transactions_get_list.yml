@@ -40,6 +40,13 @@ parameters:
           example: "latest / newest"
       description: Order date
       required: false
+    - in: query
+      name: status
+      schema:
+          type: integer
+          example: 1
+      description: Transaction status
+      required: false
 responses:
     200:
         description: Successfully create transaction and return payment link
