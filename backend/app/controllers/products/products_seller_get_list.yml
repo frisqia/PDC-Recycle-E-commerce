@@ -58,8 +58,22 @@ responses:
                                 type: integer
                                 example: 10
                             image_url:
-                                type: string
-                                example: "www.google.com"
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: integer
+                                            example: 1
+                                        image_public_id:
+                                            type: string
+                                            example: iyronmbpu5k0qxm
+                                        image_secure_url:
+                                            type: string
+                                            example: https://res.cloudinary.com/gfp-group-1/image/upload/v1610267581/iyronmbpu5k0qxm.png
+                                        product_id:
+                                            type: integer
+                                            example: 1
                             product_type:
                                 type: integer
                                 example: 1

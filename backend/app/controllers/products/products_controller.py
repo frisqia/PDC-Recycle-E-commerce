@@ -59,6 +59,7 @@ def product_delete(product_id):
 
 @products_blueprint.route("/seller/deleteimage/<int:image_id>", methods=["DELETE"])
 @jwt_required()
+@swag_from("./products_seller_delete_image.yml")
 def product_delete_image(image_id):
     identity = get_jwt_identity()
     data = request.get_json()
