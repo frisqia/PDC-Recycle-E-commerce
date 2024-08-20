@@ -185,6 +185,36 @@ class SellersServices:
             self.db.session.rollback()
             return {"error": str(e)}, 500
 
+    def seller_public_info(self, seller_id):
+        try:
+            seller_info = self.repository.get_seller_by_id(seller_id)
+
+            if not seller_info:
+                raise ValueError("Seller not found")
+
+            seller_info = seller_info.to_dict()
+
+            pop_keys = ["email", "phone_number"]
+            for key in pop_keys:
+                seller_info.pop(key, None)
+
+            pop_address_key = [
+                "address_line",
+                "address_type",
+                "phone_number",
+                "receiver_name",
+                "rt_rw",
+            ]
+            for key in pop_address_key:
+                seller_info["addresses"][0].pop(key, None)
+
+            return {"seller": seller_info}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+
     def change_email(self, seller_id, data):
         try:
             edit_data = get_data_and_validate(
