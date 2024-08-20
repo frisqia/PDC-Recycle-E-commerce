@@ -97,7 +97,10 @@ class Products(db.Model):
         }
 
         product_images = self.product_images
-        images = [image.to_dict() for image in product_images]
+        if len(product_images) > 0:
+            images = [image.to_dict() for image in product_images]
+        else:
+            images = None
 
         return {
             "id": self.id,
@@ -107,7 +110,7 @@ class Products(db.Model):
             "weight_kg": round(self.weight_kg, 2),
             "volume_m3": round(self.volume_m3, 2),
             "stock": self.stock,
-            "images_url": images,
+            "image_url": images,
             "product_type": self.product_type,
             "category_id": self.category_id,
             "is_active": self.is_active,
@@ -126,11 +129,18 @@ class Products(db.Model):
             "store_immage_url": seller["store_image_url"],
         }
 
+        product_images = self.product_images
+        if len(product_images) > 0:
+            images = [image.to_dict() for image in product_images]
+        else:
+            images = None
+
         return {
             "id": self.id,
             "name": self.name,
             "price": self.price,
             "stock": self.stock,
+            "image_url": images,
             "category_id": self.category_id,
             "category_name": self.category_products.category_name,
             "is_active": self.is_active,

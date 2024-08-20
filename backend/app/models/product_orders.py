@@ -28,9 +28,14 @@ class ProductOrders(db.Model):
 
     def to_dict(self):
         product = self.product_orders.to_cart()
+
         product_info = {
             "is_active": product["is_active"],
-            "image_url": product["image_url"],
+            "image_url": (
+                product.get("image_url")[0]["image_secure_url"]
+                if product["image_url"]
+                else None
+            ),
             "name": product["name"],
             "price": product["price"],
         }
