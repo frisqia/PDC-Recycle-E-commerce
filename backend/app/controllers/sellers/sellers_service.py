@@ -128,7 +128,7 @@ class SellersServices:
                     count_updated_key += 1
                     key_updated.append(key)
 
-            if data.get("store_image_url", None):
+            if key == "store_image_url" and data.get("store_image_url"):
                 if seller.store_image_url:
                     identity = {"id": seller_id, "role": "seller"}
                     delete, status_code = self.seller_delete_image(identity=identity)
@@ -214,8 +214,10 @@ class SellersServices:
                 "receiver_name",
                 "rt_rw",
             ]
-            for key in pop_address_key:
-                seller_info["addresses"][0].pop(key, None)
+
+            if seller_info["addresses"]:
+                for key in pop_address_key:
+                    seller_info["addresses"][0].pop(key, None)
 
             return {"seller": seller_info}, 200
 
