@@ -11,7 +11,7 @@ class TransactionsRepository:
         return self.transaction(**data)
 
     def get_transaction_by_user_id(
-        self, role, role_id, date=None, page=1, per_page=10, tx=None
+        self, role, role_id, date=None, page=1, per_page=10, tx=None, status=None
     ):
         query = self.transaction.query
 
@@ -28,6 +28,8 @@ class TransactionsRepository:
             query = query.order_by(self.transaction.created_at.desc())
         if date == "oldest":
             query = query.order_by(self.transaction.created_at.asc())
+        if status:
+            query = query.filter_by(transaction_status=status)
 
         return query.paginate(page=page, per_page=per_page)
 
