@@ -37,6 +37,12 @@ def seller_info():
     return service.seller_info(seller_id)
 
 
+@sellers_blueprint.route("/publicinfo/<int:seller_id>", methods=["GET"])
+@swag_from("./seller_public_info.yml")
+def seller_public_info(seller_id):
+    return service.seller_public_info(seller_id)
+
+
 @sellers_blueprint.route("/update/personal", methods=["PUT"])
 @jwt_required()
 @swag_from("./seller_update_personal.yml")

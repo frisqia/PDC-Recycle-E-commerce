@@ -17,6 +17,29 @@ parameters:
           type: string
           example: TRX20240813215ED09B
       description: ID of specific transaction
+      required: false
+    - in: query
+      name: page
+      schema:
+          type: integer
+          example: 1
+      description: Page number
+      required: false
+    - in: query
+      name: per_page
+      schema:
+          type: integer
+          example: 10
+      description: Items per page
+      required: false
+    - in: query
+      name: date
+      schema:
+          type: string
+          enum: ["latest", "newest"]
+          example: "latest / newest"
+      description: Order date
+      required: false
 responses:
     200:
         description: Successfully create transaction and return payment link
