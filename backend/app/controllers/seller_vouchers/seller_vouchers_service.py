@@ -12,14 +12,35 @@ class SellerVouchersService:
 
     def create_voucher(self, data, identity):
         try:
+            keys = [
+                "title",
+                "discount_type",
+                "min_purchase_amount",
+                "max_discount_amount",
+                "usage_limit",
+                "start_date",
+                "expiry_date",
+            ]
             start_date = data.get("start_date")
             expiry_date = data.get("expiry_date")
-            tz = data.get("timezone")
+            tz = data.get("timezone", None)
 
             data = self.get_all_data(data)
 
             if not is_filled(**data):
                 raise ValueError("Please fill all required fields")
+
+            for key in keys:
+                if key not in data:
+                    raise ValueError(f"{key} is required")
+
+            if data["discount_type"] == 1 and "percentage" not in data:
+                raise ValueError("Please fill percentage")
+            if data["discount_type"] == 2:
+                data["percentage"] = None
+
+            if not tz:
+                raise ValueError("Please provide timezone")
 
             if identity.get("role") != "seller":
                 raise ValueError("Unauthorized")
