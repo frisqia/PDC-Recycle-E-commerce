@@ -36,7 +36,6 @@ class Products(db.Model):
     width_cm = Column(Integer, nullable=False)
     height_cm = Column(Integer, nullable=False)
     stock = Column(SmallInteger, nullable=False)
-    image_url = Column(VARCHAR(255), nullable=True)
     product_type = Column(Integer, nullable=False)
     category_id = Column(SmallInteger, ForeignKey("categories.id"), nullable=False)
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
@@ -51,6 +50,7 @@ class Products(db.Model):
 
     reviews = relationship("Reviews", backref="product_reviews")
     product_orders = relationship("ProductOrders", backref="product_orders")
+    product_images = relationship("ProductImages", backref="product_images")
 
     def __init__(
         self,
@@ -59,7 +59,6 @@ class Products(db.Model):
         price,
         weight_kg,
         stock,
-        image_url,
         product_type,
         category_id,
         seller_id,
@@ -72,7 +71,6 @@ class Products(db.Model):
         self.price = price
         self.weight_kg = weight_kg
         self.stock = stock
-        self.image_url = image_url
         self.product_type = product_type
         self.category_id = category_id
         self.seller_id = seller_id
@@ -98,6 +96,9 @@ class Products(db.Model):
             "store_district": seller["addresses"][0]["district_name"],
         }
 
+        product_images = self.product_images
+        images = [image.to_dict() for image in product_images]
+
         return {
             "id": self.id,
             "name": self.name,
@@ -106,7 +107,7 @@ class Products(db.Model):
             "weight_kg": round(self.weight_kg, 2),
             "volume_m3": round(self.volume_m3, 2),
             "stock": self.stock,
-            "image_url": self.image_url,
+            "images_url": images,
             "product_type": self.product_type,
             "category_id": self.category_id,
             "is_active": self.is_active,
@@ -130,7 +131,6 @@ class Products(db.Model):
             "name": self.name,
             "price": self.price,
             "stock": self.stock,
-            "image_url": self.image_url,
             "category_id": self.category_id,
             "category_name": self.category_products.category_name,
             "is_active": self.is_active,

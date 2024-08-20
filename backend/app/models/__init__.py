@@ -14,3 +14,4 @@ from .addresses import Addresses
 from .reviews import Reviews
 from .shipment_details import ShipmentDetails
 from .product_orders import ProductOrders
+from .product_images import ProductImages

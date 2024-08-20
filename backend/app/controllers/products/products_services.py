@@ -1,6 +1,7 @@
 from .products_repository import ProductsRepository
 from ..sellers.sellers_service import SellersServices
 from ..cloudinary.cloudinary_service import CloudinaryService
+from ..product_images.product_images_service import ProductImagesService
 
 from app.db import db
 from ..common import is_filled, get_data_and_validate
@@ -13,42 +14,52 @@ class ProductsServices:
         repository=None,
         seller_service=None,
         cloudinary_service=None,
+        product_images_service=None,
     ):
         self.db = db
         self.repository = repository or ProductsRepository()
         self.seller_service = seller_service or SellersServices()
         self.cloudinary_service = cloudinary_service or CloudinaryService()
+        self.product_images_service = product_images_service or ProductImagesService()
 
     def create_product(self, data, role, role_id):
-        # try:
-        seller_info_address = self.check_role_and_id(role, role_id)["seller"][
-            "addresses"
-        ]
+        try:
+            seller_info_address = self.check_role_and_id(role, role_id)["seller"][
+                "addresses"
+            ]
 
-        if not seller_info_address or len(seller_info_address) <= 0:
-            raise ValueError("Must input an address before creating a product")
+            if not seller_info_address or len(seller_info_address) <= 0:
+                raise ValueError("Must input an address before creating a product")
 
-        all_data = self.all_data(data)
+            all_data = self.all_data(data)
 
-        if not is_filled(**all_data):
-            raise ValueError("Please fill all required fields")
+            if not is_filled(**all_data):
+                raise ValueError("Please fill all required fields")
 
-        images_base64 = data.get("image_url")
-        images_url = self.cloudinary_service.upload_multiple_images(images_base64)
-        all_data["image_url"] = ",".join(images_url)
+            new_product = self.repository.create_product(seller_id=role_id, **all_data)
 
-        new_product = self.repository.create_product(seller_id=role_id, **all_data)
+            self.db.session.add(new_product)
+            self.db.session.commit()
 
-        self.db.session.add(new_product)
-        self.db.session.commit()
-        return {"message": "Product created successfully"}, 201
+            product_id = new_product.id
+            images_base64 = data.get("image_base64")
 
-    # except (TypeError, ValueError) as e:
-    #     self.db.session.rollback()
-    #     return {"error": str(e)}, 400
-    # except Exception as e:
-    #     self.db.session.rollback
-    #     return {"error": str(e)}, 500
+            # save to db and upload to cloudinary
+            message, status_code = self.product_images_service.save_image(
+                product_id=product_id, new_images_base64=images_base64
+            )
+
+            if status_code not in [200, 201]:
+                raise ValueError(message["error"])
+
+            return {"message": "Product created successfully"}, 201
+
+        except (TypeError, ValueError) as e:
+            self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            self.db.session.rollback
+            return {"error": str(e)}, 500
 
     def get_list_products(self, request, role, role_id=None):
         self.check_role_and_id(role, role_id)
@@ -89,6 +100,7 @@ class ProductsServices:
 
         try:
             all_data = self.all_data(data)
+            image_base64 = data.get("image_base64")
 
             product = self.repository.get_product_by_id(
                 product_id=product_id, role=role, role_id=role_id
@@ -106,6 +118,17 @@ class ProductsServices:
                     setattr(product, key, data)
                     count_updated_key += 1
                     key_updated.append(key)
+
+            if image_base64:
+                message, status_code = self.product_images_service.save_image(
+                    product_id=product_id, new_images_base64=image_base64
+                )
+
+                if status_code not in [200, 201]:
+                    raise ValueError(message["error"])
+
+                count_updated_key += 1
+                key_updated.append("images")
 
             if count_updated_key == 0:
                 raise ValueError("No data to update")
@@ -136,6 +159,41 @@ class ProductsServices:
 
             self.db.session.commit()
             return {"message": "Product deleted successfully"}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+    def delete_image(self, identity, image_id, data):
+        try:
+            product_id = data.get("product_id")
+            image_public_id = data.get("image_public_id")
+
+            if not product_id or not image_public_id:
+                raise ValueError("Please provide product_id and image_public_id")
+
+            self.check_role_and_id(role=identity["role"], role_id=identity["id"])
+
+            product = self.get_product_by_id(
+                role=identity["role"],
+                product_id=product_id,
+                role_id=identity["id"],
+            )
+
+            if product is None:
+                raise ValueError("Product not found")
+
+            message, result = self.product_images_service.delete_image(
+                image_id=image_id,
+                image_public_id=image_public_id,
+                product_id=product_id,
+            )
+
+            if result != 200:
+                raise ValueError(message["error"])
+
+            return {"message": "Image deleted successfully"}, 200
 
         except ValueError as e:
             return {"error": str(e)}, 400

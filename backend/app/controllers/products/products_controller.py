@@ -55,3 +55,11 @@ def product_delete(product_id):
     role = get_jwt_identity().get("role")
     role_id = get_jwt_identity().get("id")
     return service.delete_product(product_id, role, role_id)
+
+
+@products_blueprint.route("/seller/deleteimage/<int:image_id>", methods=["DELETE"])
+@jwt_required()
+def product_delete_image(image_id):
+    identity = get_jwt_identity()
+    data = request.get_json()
+    return service.delete_image(identity=identity, image_id=image_id, data=data)
