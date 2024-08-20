@@ -3,10 +3,12 @@ from flask_jwt_extended import create_access_token
 from .users_repository import UserRepository
 from app.db import db
 from ..common import is_filled, get_data_and_validate
+from ..cloudinary.cloudinary_service import CloudinaryService
 
 
 class UserServices:
-    def __init__(self, db=db, repository=None):
+    def __init__(self, db=db, repository=None, cloudinary_service=None):
+        self.cloudinary_service = cloudinary_service or CloudinaryService()
         self.repository = repository or UserRepository()
         self.db = db
 
@@ -244,4 +246,69 @@ class UserServices:
         except Exception as e:
             if commit:
                 self.db.session.rollback()
+            return {"error": str(e)}, 500
+
+    def user_delete_image(self, identity):
+        try:
+            role_id = identity.get("id")
+            role = identity.get("role")
+
+            if role != "user":
+                raise ValueError("Unauthorized")
+
+            user = self.repository.get_user_by_id(role_id)
+
+            if not user:
+                raise ValueError("User not found")
+
+            public_id = user.image_public_id
+
+            if not public_id:
+                raise ValueError("User does not have image")
+
+            self.cloudinary_service.delete_image(public_id)
+            user.image_public_id = None
+            user.image_url = None
+
+            self.db.session.commit()
+
+            return {"message": "Image deleted successfully"}, 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
+
+    def user_change_image(self, identity, data):
+        try:
+            role_id = identity.get("id")
+            role = identity.get("role")
+            image = data.get("image_base64")
+
+            if len(image) > 1:
+                raise ValueError("Only one image is allowed")
+
+            if role != "user":
+                raise ValueError("Unauthorized")
+
+            user = self.repository.get_user_by_id(role_id)
+
+            if not user:
+                raise ValueError("User not found")
+
+            public_id = user.image_public_id
+            if public_id:
+                self.cloudinary_service.delete_image(public_id)
+
+            image_url = self.cloudinary_service.upload_multiple_images(image)
+
+            user.image_url = image_url[0]["secure_url"]
+            user.image_public_id = image_url[0]["public_id"]
+
+            self.db.session.commit()
+
+            return {"message": "Image changed successfully"}, 200
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
             return {"error": str(e)}, 500

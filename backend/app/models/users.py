@@ -23,6 +23,8 @@ class Users(db.Model, UserMixin):
     email = Column(VARCHAR(50), unique=True, nullable=False)
     password = Column(VARCHAR(255), nullable=False)
     phone_number = Column(VARCHAR(14), unique=True, nullable=False)
+    image_url = Column(VARCHAR(255), nullable=True)
+    image_public_id = Column(VARCHAR(255), nullable=True)
     is_active = Column(Integer, default=Is_Active_Status.ACTIVE.value, nullable=False)
     created_at = Column(
         DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
@@ -60,6 +62,8 @@ class Users(db.Model, UserMixin):
             "email": self.email,
             "phone_number": self.phone_number,
             "addresses": addresses,
+            "image_url": self.image_url,
+            "balance": self.balance,
         }
 
     def delete_user(self):
