@@ -34,6 +34,7 @@ class TransactionsDeleteRead:
             date = req.args.get("date", None)
             page = req.args.get("page", 1, int)
             per_page = req.args.get("per_page", 10, int)
+            status = req.args.get("status", None, int)
             role = identity.get("role")
             role_id = identity.get("id")
 
@@ -46,6 +47,7 @@ class TransactionsDeleteRead:
                 date=date,
                 page=page,
                 per_page=per_page,
+                status=status
             )
 
             if not transactions:
