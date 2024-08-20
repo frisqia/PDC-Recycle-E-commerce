@@ -285,7 +285,7 @@ class UserServices:
             role = identity.get("role")
             image = data.get("image_base64")
 
-            if len(image) > 1:
+            if len(image) != 1:
                 raise ValueError("Only one image is allowed")
 
             if role != "user":

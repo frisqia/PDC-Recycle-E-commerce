@@ -141,6 +141,8 @@ class SellersServices:
 
                     if status_code not in [200, 201]:
                         raise ValueError("Failed to delete previous image")
+                    if len(data.get("store_image_url")) != 1:
+                        raise ValueError("Please upload only one image")
 
                 result = self.cloudinary_service.upload_multiple_images(
                     data["store_image_url"]
