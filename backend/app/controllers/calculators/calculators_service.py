@@ -5,6 +5,7 @@ from ..users.users_services import UserServices
 from .voucher_service import VoucherService
 from .product_service import ProductService
 from .shipment_service import ShipmentService
+from ..shipping_options.shipping_options_service import ShippingOptionsService
 
 
 class CalculatorsService:
@@ -14,11 +15,15 @@ class CalculatorsService:
         voucher_service=None,
         product_service=None,
         shipment_service=None,
+        shipping_options_service=None,
     ):
         self.user_service = user_service or UserServices()
         self.voucher_service = voucher_service or VoucherService()
         self.product_service = product_service or ProductService()
         self.shipment_service = shipment_service or ShipmentService()
+        self.shipping_options_service = (
+            shipping_options_service or ShippingOptionsService()
+        )
 
     def calculate_cart(self, data, identity):
         """
@@ -164,6 +169,21 @@ class CalculatorsService:
             seller_address_id = seller_address["id"]
             seller_district = seller_address["district_id"]
             courier_vendor = courier["selected_courier"]
+            
+            seller_identity = {"role": "seller", "id": seller_id}
+            couriers_option, status_code = (
+                self.shipping_options_service.get_option_list(identity=seller_identity)
+            )
+            if status_code != 200:
+                raise ValueError(couriers_option["error"])
+
+            seller_courier = []
+            for option in couriers_option:
+                if option["is_active"] == 1:
+                    seller_courier.append(option["shipment"])
+                    
+            if courier_vendor not in seller_courier:
+                raise ValueError(f"selected_courier vendor {courier_vendor} not in any courier that provided by seller {seller_id}")
 
             shipment_option = asyncio.run(
                 self.shipment_service.get_possible_shipment_option(

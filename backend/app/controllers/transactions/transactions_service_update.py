@@ -33,6 +33,9 @@ class TransactionServiceUpdate:
                 transaction_id=transaction_id, role="seller", role_id=identity.get("id")
             )
 
+            if not transaction:
+                raise ValueError("Transaction not found")
+
             transaction.change_to_prepared()
             self.db.session.commit()
 
