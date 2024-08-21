@@ -48,6 +48,7 @@ class ProductsRepository:
         category_id=None,
         province_id=None,
         district_id=None,
+        seller_id=None,
     ):
         query = self.product.query
 
@@ -87,5 +88,7 @@ class ProductsRepository:
                 .group_by(self.product.id)
                 .filter(Addresses.district_id == district_id)
             )
+        if seller_id:
+            query = query.filter(self.product.seller_id == seller_id)
 
         return query.paginate(page=page, per_page=per_page)

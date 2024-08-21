@@ -32,6 +32,7 @@ class ProductServicesUser:
         category = req.args.get("category", None)
         province_id = req.args.get("province_id", None)
         district_id = req.args.get("district_id", None)
+        seller_id = req.args.get("seller_id", None)
 
         try:
             per_page = req.args.get("per_page", 10, int)
@@ -46,6 +47,7 @@ class ProductServicesUser:
                 category_id=category,
                 province_id=province_id,
                 district_id=district_id,
+                seller_id=seller_id,
             )
 
             if not products:
