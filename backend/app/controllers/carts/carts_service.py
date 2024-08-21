@@ -45,6 +45,11 @@ class CartsService:
 
                 sub_total = product_detail["price"] * item["quantity"]
 
+                if product_detail["image_url"]:
+                    product_detail["image_url"] = product_detail["image_url"][0][
+                        "image_secure_url"
+                    ]
+
                 items_with_price["items"].append(
                     {
                         "detail_product": product_detail,
