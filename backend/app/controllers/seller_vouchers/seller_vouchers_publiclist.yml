@@ -3,14 +3,13 @@ tags:
 summary: Get list of vouchers
 description: Get list of vouchers
 parameters:
-    - in: header
-      name: Authorization
-      schema:
-          type: string
-          format: JWT
-          example: Bearer <JWT>
-      description: JWT Token
+    - in: path
+      name: seller_id
       required: true
+      schema:
+          type: integer
+          example: 1
+      description: ID
     - name: date
       in: query
       required: false

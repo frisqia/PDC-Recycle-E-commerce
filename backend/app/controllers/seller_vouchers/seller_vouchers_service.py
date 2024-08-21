@@ -189,3 +189,23 @@ class SellerVouchersService:
             start_date=datetime,
             expiry_date=datetime,
         )
+
+    def get_list_voucher(self, seller_id, req):
+        try:
+            page = req.args.get("page", 1, int)
+            per_page = req.args.get("per_page", 10, int)
+            date = req.args.get("date", "latest")
+
+            list_vouchers = self.repository.list_vouchers(
+                seller_id=seller_id, page=page, per_page=per_page, date=date
+            )
+
+            if not list_vouchers:
+                return [], 200
+
+            return [voucher.to_dict() for voucher in list_vouchers], 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500
