@@ -161,7 +161,9 @@ class CalculatorsService:
         for courier in selected_courier:
             seller_ids = calculated_product_detail.keys()
             if int(courier["seller_id"]) not in seller_ids:
-                raise ValueError(f"selected_courier seller_id {courier["seller_id"]} not in any seller_id of product in cart")
+                raise ValueError(
+                    f"selected_courier seller_id {courier['seller_id']} not in any seller_id of product in cart"
+                )
             seller_id = courier["seller_id"]
             seller_address = self.shipment_service.get_seller_address(
                 seller_id=seller_id
@@ -169,7 +171,7 @@ class CalculatorsService:
             seller_address_id = seller_address["id"]
             seller_district = seller_address["district_id"]
             courier_vendor = courier["selected_courier"]
-            
+
             seller_identity = {"role": "seller", "id": seller_id}
             couriers_option, status_code = (
                 self.shipping_options_service.get_option_list(identity=seller_identity)
@@ -181,9 +183,11 @@ class CalculatorsService:
             for option in couriers_option:
                 if option["is_active"] == 1:
                     seller_courier.append(option["shipment"])
-                    
+
             if courier_vendor not in seller_courier:
-                raise ValueError(f"selected_courier vendor {courier_vendor} not in any courier that provided by seller {seller_id}")
+                raise ValueError(
+                    f"selected_courier vendor {courier_vendor} not in any courier that provided by seller {seller_id}"
+                )
 
             shipment_option = asyncio.run(
                 self.shipment_service.get_possible_shipment_option(

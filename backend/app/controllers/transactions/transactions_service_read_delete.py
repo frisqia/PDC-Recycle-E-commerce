@@ -7,6 +7,7 @@ from ..products.products_services import ProductsServices
 from ..product_orders.product_orders_service import ProductOrdersService
 from ..shipment_details.shipment_details_service import ShipmentDetailsService
 
+
 class TransactionsDeleteRead:
     def __init__(
         self,
@@ -17,7 +18,7 @@ class TransactionsDeleteRead:
         user_service=None,
         product_serivce=None,
         product_order_service=None,
-        shipment_detail_service=None
+        shipment_detail_service=None,
     ):
         self.db = db
         self.repository = repository or TransactionsRepository()
@@ -26,7 +27,9 @@ class TransactionsDeleteRead:
         self.user_service = user_service or UserServices()
         self.product_service = product_serivce or ProductsServices()
         self.product_order_service = product_order_service or ProductOrdersService()
-        self.shipment_detail_service = shipment_detail_service or ShipmentDetailsService()
+        self.shipment_detail_service = (
+            shipment_detail_service or ShipmentDetailsService()
+        )
 
     def list_transactions(self, identity, req):
         try:
@@ -47,7 +50,7 @@ class TransactionsDeleteRead:
                 date=date,
                 page=page,
                 per_page=per_page,
-                status=status
+                status=status,
             )
 
             if not transactions:
@@ -77,11 +80,17 @@ class TransactionsDeleteRead:
                 self.canceled_by_user(transaction=transaction)
             if role == "seller":
                 self.canceled_by_seller(transaction=transaction)
-                
-            delete_shipment_detail, status_code = self.shipment_detail_service.delete_detail(transaction_id=transaction_id)
-            
+
+            delete_shipment_detail, status_code = (
+                self.shipment_detail_service.delete_detail(
+                    transaction_id=transaction_id
+                )
+            )
+
             if status_code != 200:
-                raise ValueError(f"{delete_shipment_detail["error"]} while trying to delete shipment detail")
+                raise ValueError(
+                    f"{delete_shipment_detail['error']} while trying to delete shipment detail"
+                )
 
             self.db.session.commit()
             return {"message": "Transaction canceled successfully"}, 200
@@ -158,14 +167,16 @@ class TransactionsDeleteRead:
 
         if status == 6:
             raise ValueError("Transaction has been canceled.")
-        
+
     def refund_user(self, user_id, amount):
         message, status_code = self.user_service.refund(
             user_id=user_id, amount=amount, commit=False
         )
 
         if status_code != 200:
-            raise ValueError(f"{message["error"]} while trying to refund balance to user")
+            raise ValueError(
+                f"{message['error']} while trying to refund balance to user"
+            )
 
     def product_cancelled_modification(self, transaction_id):
         product_orders, status_code = (
