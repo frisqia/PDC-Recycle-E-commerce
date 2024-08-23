@@ -40,7 +40,7 @@ parameters:
                   type: array
                   items:
                       type: integer
-                      example: [1, 2, 3]
+                      example: 1, 2, 3
               user_selected_address_id:
                   type: integer
                   example: 1
