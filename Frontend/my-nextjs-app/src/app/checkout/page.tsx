@@ -4,9 +4,8 @@ import React, { useEffect, useState } from "react";
 import Loading from "../components/loading/loading";
 import FooterDash from "../components/footer";
 import { instanceWithAuth } from "@/utils/auth";
-import Link from "next/link";
-import VoucherModal from "./vocherList";
 
+import Link from "next/link";
 
 
 
@@ -112,13 +111,13 @@ interface Courier {
   vendor_name: string;
 }
 
-
-
 export default function CheckoutProduct() {
   const [products, setProducts] = useState<CartProduct[]>([]);
   const [totalPrice, setTotalPrice] = useState<number>(0);
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [couriers, setCouriers] = useState<Courier[]>([]);
+  
+
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
     null
   );
@@ -142,7 +141,6 @@ export default function CheckoutProduct() {
   const[errorTransaction, setErrorTransactions] = useState<string | null>(null)
 
 
-
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -151,19 +149,16 @@ export default function CheckoutProduct() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [cartResp, addressesResp, couriersResp, ] = await Promise.all([
+        const [cartResp, addressesResp, couriersResp] = await Promise.all([
           instanceWithAuth.get(`carts/list`),
           instanceWithAuth.get(`addresses/list`),
-          instanceWithAuth.get(`shipments/list`),
-          
+          instanceWithAuth.get(`shipments/list`)
         ]);
 
         setProducts(cartResp.data.items);
         setTotalPrice(cartResp.data.total_price);
         setAddresses(addressesResp.data);
         setCouriers(couriersResp.data);
-       
-
         if (addressesResp.data.length > 0) setSelectedAddressId(addressesResp.data[0].id);
 
       } catch (error: any) {
@@ -283,17 +278,6 @@ export default function CheckoutProduct() {
     setSelectedShippingCost(option.cost);
   };
 
-
-  const [showShowVocher, setShowVoucherList] = useState(false);
-
-  const openVocherList = () => {
-    setShowVoucherList(true);
-  };
-
-  const closeVocherList = () => {
-    setShowVoucherList(false);
-  };
-
   if (loading) {
     return <Loading />;
   }
@@ -368,10 +352,6 @@ export default function CheckoutProduct() {
           </table>
         </div>
       )}
-      <button
-              className="p-2 bg-custom-green hover:bg-custom-green/80 text-white rounded-lg"
-              onClick={openVocherList}
-            ></button>
 
       {Object.keys(shipmentOptions).length > 0 && (
         <div className="bg-white py-4 px-10 shadow-lg">
@@ -411,9 +391,6 @@ export default function CheckoutProduct() {
           )}
         </div>
       )}
-
-
-            {showShowVocher && <VoucherModal onClose={closeVocherList} />}
 
       <div className="flex justify-end items-center space-x-4 mt-4 px-10 bg-white p-4 rounded-b-lg shadow-lg">
         <div className="flex flex-col text-right">
