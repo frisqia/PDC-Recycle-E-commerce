@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
-import accessToken from "@/app/token-sementara/config";
-import { Formik } from "formik";
 import { instanceWithAuth } from "@/utils/auth";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
 interface UpdatePersonalProps {
   email: string;
@@ -11,56 +11,71 @@ interface UpdatePersonalProps {
 }
 
 export default function UpdatePersonal({ email, phoneNumber, password }: UpdatePersonalProps) {
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhoneNumber, setNewPhoneNumber] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [currentPassword, setCurrentPassword] = useState(password);
   const [requestType, setRequestType] = useState<"change_email" | "change_phone_number" | "change_password">("change_email");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const handleUpdate = async () => {
-    if (!currentPassword) {
-      alert("Password wajib diisi.");
-      return;
-    }
+  
+  const validationSchema = Yup.object({
+    currentPassword: Yup.string().required("Current password is required"),
+    newEmail: Yup.string()
+      .email("Invalid email address")
+      .nullable()  
+      .when('requestType', {
+        is: (value: string) => value === "change_email",
+        then: (schema) => schema.required("Email is required"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    newPhoneNumber: Yup.string()
+      .matches(/^[0-9]+$/, "Phone number must contain only numbers")
+      .min(8, "Phone number must be at least 8 digits")
+      .max(13, "Phone number must not exceed 13 digits")
+      .nullable()  
+      .when('requestType', {
+        is: (value: string) => value === "change_phone_number",
+        then: (schema) => schema.required("Phone number is required"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    newPassword: Yup.string()
+      .min(8, "Password must be at least 8 characters")
+      .matches(/[0-9]/, "Password must contain at least one number")
+      .matches(/[a-z]/, "Password must contain at least one lowercase letter")
+      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .matches(/[\W_]/, "Password must contain at least one special character")
+      .nullable() 
+      .when('requestType', {
+        is: (value: string) => value === "change_password",
+        then: (schema) => schema.required("New password is required"),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+  });
+  
 
+  const handleUpdate = async (values: any) => {
     setLoading(true);
 
     const body: any = {
-      password: currentPassword,
+      password: values.currentPassword,
       request_type: requestType,
     };
 
     if (requestType === "change_email") {
-      body.new_email = newEmail;
+      body.new_email = values.newEmail;
     } else if (requestType === "change_phone_number") {
-      body.new_phone_number = newPhoneNumber;
+      body.new_phone_number = values.newPhoneNumber;
     } else if (requestType === "change_password") {
-      body.new_password = newPassword;
+      body.new_password = values.newPassword;
     }
 
     try {
+      const res = await instanceWithAuth.put("users/update", body, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        const res = await instanceWithAuth.put("users/update", body ,{
-            headers: {
-                'Content-Type': 'application/json',
-              },
-        });
-        if (res.status !== 200) throw new Error('failed get update profile')
-            setSuccessMessage("Data berhasil diperbarui")
-    //   const res = await fetch("http://127.0.0.1:5000/api/users/update", {
-    //     method: "PUT",
-    //     headers: {
-    //       Authorization: `Bearer ${accessToken}`,
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(body),
-    //   });
-
-    //   if (!res.ok) throw new Error("Gagal memperbarui data");
-
-    //   setSuccessMessage("Data berhasil diperbarui");
+      if (res.status !== 200) throw new Error("Failed to update profile");
+      setSuccessMessage("Data successfully updated");
     } catch (error: any) {
       console.error(error.message);
     } finally {
@@ -85,67 +100,82 @@ export default function UpdatePersonal({ email, phoneNumber, password }: UpdateP
         </select>
       </div>
 
-      {requestType === "change_email" && (
-        <div className="mb-4">
-          <label className="block mb-1">New Email</label>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-            className="border p-2 rounded-md w-full"
-            placeholder="Enter new email"
-          />
-        </div>
-      )}
-
-      {requestType === "change_phone_number" && (
-        <div className="mb-4">
-          <label className="block mb-1">New Phone Number</label>
-          <input
-            type="tel"
-            value={newPhoneNumber}
-            onChange={(e) => setNewPhoneNumber(e.target.value)}
-            className="border p-2 rounded-md w-full"
-            placeholder="Enter new phone number"
-          />
-        </div>
-      )}
-
-      {requestType === "change_password" && (
-        <div className="mb-4">
-          <label className="block mb-1">New Password</label>
-          <input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="border p-2 rounded-md w-full"
-            placeholder="Enter new password"
-          />
-        </div>
-      )}
-
-      <div className="mb-4">
-        <label className="block mb-1">Current Password</label>
-        <input
-          type="password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          className="border p-2 rounded-md w-full"
-          placeholder="Enter your current password"
-        />
-      </div>
-
-      <button
-        onClick={handleUpdate}
-        disabled={loading}
-        className={`p-2 bg-custom-green hover:bg-custom-green/80 text-white rounded-lg ${
-          loading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+      <Formik
+        initialValues={{
+          newEmail: "",
+          newPhoneNumber: "",
+          newPassword: "",
+          currentPassword: "",
+        }}
+        validationSchema={validationSchema}
+        onSubmit={handleUpdate}
       >
-        {loading ? "Updating..." : "Update"}
-      </button>
+        {({ isSubmitting }) => (
+          <Form>
+            {requestType === "change_email" && (
+              <div className="mb-4">
+                <label className="block mb-1">New Email</label>
+                <Field
+                  type="email"
+                  name="newEmail"
+                  className="border p-2 rounded-md w-full"
+                  placeholder="Enter new email"
+                />
+                <ErrorMessage name="newEmail" component="div" className="text-red-500" />
+              </div>
+            )}
 
-      {successMessage && <p className="mt-4 text-green-500">{successMessage}</p>}
+            {requestType === "change_phone_number" && (
+              <div className="mb-4">
+                <label className="block mb-1">New Phone Number</label>
+                <Field
+                  type="tel"
+                  name="newPhoneNumber"
+                  className="border p-2 rounded-md w-full"
+                  placeholder="Enter new phone number"
+                />
+                <ErrorMessage name="newPhoneNumber" component="div" className="text-red-500" />
+              </div>
+            )}
+
+            {requestType === "change_password" && (
+              <div className="mb-4">
+                <label className="block mb-1">New Password</label>
+                <Field
+                  type="password"
+                  name="newPassword"
+                  className="border p-2 rounded-md w-full"
+                  placeholder="Enter new password"
+                />
+                <ErrorMessage name="newPassword" component="div" className="text-red-500" />
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block mb-1">Current Password</label>
+              <Field
+                type="password"
+                name="currentPassword"
+                className="border p-2 rounded-md w-full"
+                placeholder="Enter your current password"
+              />
+              <ErrorMessage name="currentPassword" component="div" className="text-red-500" />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || loading}
+              className={`p-2 bg-custom-green hover:bg-custom-green/80 text-white rounded-lg ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading ? "Updating..." : "Update"}
+            </button>
+
+            {successMessage && <p className="mt-4 text-green-500">{successMessage}</p>}
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 }
