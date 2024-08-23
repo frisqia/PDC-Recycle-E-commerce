@@ -63,8 +63,8 @@ class UserSellerVouchersService:
             self.check_user(identity=identity)
 
             user_id = identity.get("id")
-            seller_ids = req.get("seller_ids", None)
-
+            seller_ids = req.args.getlist("sellerids", None)\
+                
             if not seller_ids:
                 vouchers = self.repository.get_vouchers_by_user_id(user_id=user_id)
             else:

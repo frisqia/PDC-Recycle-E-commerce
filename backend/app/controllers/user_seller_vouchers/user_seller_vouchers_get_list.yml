@@ -11,17 +11,12 @@ parameters:
           example: Bearer <JWT>
       description: JWT Token
       required: true
-    - in: body
-      name: Seller ID Filter
-      required: false
+    - in: query
+      name: sellerids
       schema:
-          type: object
-          properties:
-              seller_ids:
-                  type: array
-                  items:
-                      type: integer
-                      example: 1, 3, 4
+          type: string
+          example: 1,2,3
+      description: ID of seller
 responses:
     201:
         description: Voucher retrieved successfully
