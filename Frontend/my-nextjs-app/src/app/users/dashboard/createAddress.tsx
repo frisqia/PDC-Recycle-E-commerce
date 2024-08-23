@@ -94,7 +94,7 @@ const CreatedAddress: React.FC<AddressesModalProps> = ({ onClose, userId }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white p-4 shadow-lg max-w-lg mx-4 max-h-[50vh] overflow-auto">
         <div className="flex justify-between items-center">
-          <h2>Your Address</h2>
+          
           <h3 className="mt-4 text-lg font-bold">Add New Address</h3>
         </div>
         <div>
