@@ -270,6 +270,7 @@ export default function purchaseTransaction() {
       if (response.status !== 200) {
         throw new Error("Failed to submit review");
       }
+      console.log("Response:", response);
 
       const result: ReviewData = await response.data;
 
