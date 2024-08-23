@@ -4,7 +4,7 @@ import FooterDash from "@/app/components/footer";
 import CatalogDashboard from "@/app/components/homedash/content";
 import Loading from "@/app/components/loading/loading";
 import NavbarPage from "@/app/components/navbar";
-import accessToken from "@/app/token-sementara/config";
+
 import { instance, instanceWithAuth } from "@/utils/auth";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -119,23 +119,6 @@ export default function SellerInfo() {
           const vocData = await vochRes.json();
           console.log(vocData, "vocher");
           setVouchers(vocData || []);
-
-          // const res = await instance.get(`sellers/publicinfo/${id}`)
-          // if(res.status !==200) throw new Error("Failed to fetch seller info")
-          // const data = await res.data
-          // setSeller(data)
-
-          // const prodRes = await instance.get(`products/user/query?seller_id=${id}&page=${currentPage}&per_page=18`)
-          // if(prodRes.status !==200) throw new Error("Failed to fetch product info");
-          // const prodData:ApiResponse = await prodRes.data
-          // setAllProducts(prodData.products);
-          // setTotalPages(prodData.total_page);
-          
-
-          // const vocherRes = await instance.get(`sellervouchers/publiclist/${id}`)
-          // if(vocherRes.status ! ==200) throw new Error("Failed to fetch voucher data");
-          // const vocData = await vocherRes.data
-          // setVouchers(vocData || [])
 
           
         } catch (error) {
