@@ -48,6 +48,7 @@ class ProductsRepository:
         category_id=None,
         province_id=None,
         district_id=None,
+        seller_id=None,
     ):
         query = self.product.query
 
@@ -73,7 +74,7 @@ class ProductsRepository:
             query = query.order_by(self.product.price.desc())
         if date == "newest":
             query = query.order_by(self.product.created_at.desc())
-        if date == "latest":
+        if date == "oldest":
             query = query.order_by(self.product.created_at.asc())
         if province_id:
             query = (
@@ -87,5 +88,7 @@ class ProductsRepository:
                 .group_by(self.product.id)
                 .filter(Addresses.district_id == district_id)
             )
+        if seller_id:
+            query = query.filter(self.product.seller_id == seller_id)
 
         return query.paginate(page=page, per_page=per_page)

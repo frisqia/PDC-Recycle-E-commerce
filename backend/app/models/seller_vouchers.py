@@ -38,8 +38,12 @@ class SellerVouchers(db.Model):
     start_date = Column(DateTime(timezone=True), nullable=False)
     expiry_date = Column(DateTime(timezone=True), nullable=False)
     is_active = Column(Integer, default=Is_Active_Status.ACTIVE.value, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     seller_voucher_id = relationship("UserSellerVouchers", backref="seller_voucher")
 

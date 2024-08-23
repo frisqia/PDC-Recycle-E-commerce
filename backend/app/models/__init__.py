@@ -8,8 +8,10 @@ from .sellers import Sellers
 from .shipping_options import ShippingOptions
 from .seller_vouchers import SellerVouchers
 from .user_seller_vouchers import UserSellerVouchers
-from .payment_methods import PaymentMethods
 from .payment_details import PaymentDetails
 from .transactions import Transactions
 from .addresses import Addresses
 from .reviews import Reviews
+from .shipment_details import ShipmentDetails
+from .product_orders import ProductOrders
+from .product_images import ProductImages

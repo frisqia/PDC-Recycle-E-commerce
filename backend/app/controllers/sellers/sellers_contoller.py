@@ -22,12 +22,6 @@ def seller_register():
     return service.seller_register(data)
 
 
-@sellers_blueprint.route("/logout", methods=["POST"])
-@swag_from("./seller_logout.yml")
-def seller_logout():
-    return service.seller_logout()
-
-
 @sellers_blueprint.route("/me", methods=["GET"])
 @jwt_required()
 @swag_from("./seller_info.yml")
@@ -35,6 +29,12 @@ def seller_info():
     identity = get_jwt_identity()
     seller_id = identity.get("id")
     return service.seller_info(seller_id)
+
+
+@sellers_blueprint.route("/publicinfo/<int:seller_id>", methods=["GET"])
+@swag_from("./seller_public_info.yml")
+def seller_public_info(seller_id):
+    return service.seller_public_info(seller_id)
 
 
 @sellers_blueprint.route("/update/personal", methods=["PUT"])
@@ -65,3 +65,11 @@ def seller_delete():
     seller_id = identity.get("id")
     data = request.get_json()
     return service.seller_delete(seller_id, data)
+
+
+@sellers_blueprint.route("/deleteimage", methods=["DELETE"])
+@jwt_required()
+@swag_from("./seller_delete_image.yml")
+def seller_delete_image():
+    identity = get_jwt_identity()
+    return service.seller_delete_image(identity=identity)

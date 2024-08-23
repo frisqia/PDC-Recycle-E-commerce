@@ -1,10 +1,12 @@
 from app.db import db
 from .addresses_repository import AddressesRepository
 from ..common import get_data_and_validate, is_filled
+from ..locations.locations_services import LocationServices
 
 
 class AddressesService:
-    def __init__(self, db=db, repository=None):
+    def __init__(self, db=db, repository=None, location_service=None):
+        self.location_service = location_service or LocationServices()
         self.db = db
         self.repository = repository or AddressesRepository()
 
@@ -44,12 +46,17 @@ class AddressesService:
                 data["user_id"] = identity.get("id")
                 data["seller_id"] = None
 
+            self.check_district_and_province(
+                province_id=data["province_id"], district_id=data["district_id"]
+            )
+
             address = self.repository.create_address(data)
 
             self.db.session.add(address)
             self.db.session.commit()
 
             return {"message": "Address added successfully"}
+
         except ValueError as e:
             self.db.session.rollback()
             return {"error": str(e)}, 400
@@ -79,6 +86,20 @@ class AddressesService:
 
             if address is None:
                 raise ValueError("Address not found")
+
+            district_id = data.get("district_id", None)
+            if district_id:
+                province_id = address.province_id
+                self.check_district_and_province(
+                    province_id=province_id, district_id=district_id
+                )
+
+            province_id = data.get("province_id", None)
+            if province_id:
+                district_id = address.district_id
+                self.check_district_and_province(
+                    province_id=province_id, district_id=district_id
+                )
 
             for key, value in data.items():
                 if value is not None:
@@ -158,3 +179,15 @@ class AddressesService:
         )
 
         return address
+
+    def check_district_and_province(self, province_id, district_id):
+        district_id = self.location_service.get_location_by_id(
+            prov_id=None, dist_id=district_id
+        )
+
+        error = district_id.get("error", None)
+        if error:
+            raise ValueError(error)
+
+        if district_id["province_id"] != province_id:
+            raise ValueError("Province and district do not match")

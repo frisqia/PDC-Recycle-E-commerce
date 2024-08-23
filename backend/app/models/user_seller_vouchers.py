@@ -20,8 +20,12 @@ class UserSellerVouchers(db.Model):
         Integer, ForeignKey("seller_vouchers.id"), nullable=False
     )
     is_used = Column(Integer, default=Is_Used_Status.UNUSED.value, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     def to_dict(self):
         return {
@@ -34,3 +38,6 @@ class UserSellerVouchers(db.Model):
 
     def used_voucher(self):
         self.is_used = Is_Used_Status.USED.value
+
+    def unused_voucher(self):
+        self.is_used = Is_Used_Status.UNUSED.value

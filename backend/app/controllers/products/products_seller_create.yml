@@ -23,9 +23,11 @@ parameters:
               description:
                   type: string
                   example: "description"
-              image_url:
-                  type: string
-                  example: "www.google.com"
+              image_base64:
+                  type: array
+                  items:
+                      type: string
+                      example: "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8PDw8QDw8QEBAQEBAPFRAPDxUPDxUVFRUWFhYVFR..."
               price:
                   type: integer
                   example: 100

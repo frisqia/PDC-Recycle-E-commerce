@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from app.db import db
 from .user_seller_vouchers_repository import UserSellerVouchersRepository
 from ..users.users_repository import UserRepository
@@ -30,13 +32,16 @@ class UserSellerVouchersService:
             ):
                 raise ValueError("Voucher already claimed")
 
+            voucher = self.seller_voucher_repository.get_voucher_only_by_voucher_id(
+                voucher_id=seller_voucher_id
+            )
+
             if (
-                self.seller_voucher_repository.get_voucher_only_by_voucher_id(
-                    voucher_id=seller_voucher_id
-                )
-                is None
+                not voucher
+                or voucher.is_active == 0
+                or voucher.expiry_date < datetime.now()
             ):
-                raise ValueError("Voucher not found")
+                raise ValueError("Voucher not found / expired / not active")
 
             voucher = self.repository.user_save_voucher(
                 user_id=user_id, voucher_id=seller_voucher_id
@@ -58,8 +63,8 @@ class UserSellerVouchersService:
             self.check_user(identity=identity)
 
             user_id = identity.get("id")
-            seller_ids = req.get("seller_ids", None)
-
+            seller_ids = req.args.getlist("sellerids", None)\
+                
             if not seller_ids:
                 vouchers = self.repository.get_vouchers_by_user_id(user_id=user_id)
             else:
@@ -77,7 +82,7 @@ class UserSellerVouchersService:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def user_used_voucher(self, identity, user_seller_voucher_id):
+    def user_used_voucher(self, identity, user_seller_voucher_id, commit=True):
         try:
             self.check_user(identity=identity)
 
@@ -92,14 +97,48 @@ class UserSellerVouchersService:
                 raise ValueError("Voucher already used")
 
             voucher.used_voucher()
-            self.db.session.commit()
+
+            if commit:
+                self.db.session.commit()
 
             return {"message": "Voucher used successfully"}, 200
         except ValueError as e:
-            self.db.session.rollback()
+            if commit:
+                self.db.session.rollback()
             return {"error": str(e)}, 400
         except Exception as e:
-            self.db.session.rollback()
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 500
+
+    def user_unused_voucher(self, user_id, user_seller_voucher_id, commit=True):
+        try:
+            identity = {"id": user_id, "role": "user"}
+            self.check_user(identity=identity)
+
+            user_id = identity.get("id")
+            voucher = self.repository.get_voucher_by_id(
+                user_seller_voucher_id=user_seller_voucher_id, user_id=user_id
+            )
+
+            if not voucher:
+                raise ValueError("Voucher not found")
+            if voucher.is_used == 0:
+                raise ValueError("Voucher already unused")
+
+            voucher.unused_voucher()
+
+            if commit:
+                self.db.session.commit()
+
+            return {"message": "Voucher unused successfully"}, 200
+        except ValueError as e:
+            if commit:
+                self.db.session.rollback()
+            return {"error": str(e)}, 400
+        except Exception as e:
+            if commit:
+                self.db.session.rollback()
             return {"error": str(e)}, 500
 
     def user_voucher_details(self, identity, user_seller_voucher_id):

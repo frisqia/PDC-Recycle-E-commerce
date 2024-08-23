@@ -22,7 +22,7 @@ def user_save_voucher(seller_voucher_id):
 @jwt_required()
 @swag_from("./user_seller_vouchers_get_list.yml")
 def user_list_vouchers():
-    req = request.get_json()
+    req = request
     identity = get_jwt_identity()
     return service.user_list_vouchers(identity=identity, req=req)
 

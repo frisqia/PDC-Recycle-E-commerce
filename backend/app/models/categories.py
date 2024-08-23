@@ -1,4 +1,4 @@
-from sqlalchemy import Column, VARCHAR, SmallInteger, DateTime, event
+from sqlalchemy import Column, VARCHAR, SmallInteger, DateTime
 from sqlalchemy.orm import relationship
 from enum import Enum
 from datetime import datetime
@@ -20,8 +20,12 @@ class Categories(db.Model):
     is_active = Column(
         SmallInteger, default=Is_Active_Status.ACTIVE.value, nullable=False
     )
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     products = relationship("Products", backref="category_products")
 

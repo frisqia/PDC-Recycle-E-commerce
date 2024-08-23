@@ -3,15 +3,35 @@ import React, { useState } from "react";
 import LOGO from "../../asset/LOGO.png";
 import Image from "next/image";
 import SearchNav from "./searchbar";
-import MenuNav from "./menu";
 import Head from "next/head";
+import NavCart from "./navcart";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function NavbarPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false); // Tambahkan state ini
+  const pathname = usePathname(); 
+  const router = useRouter(); 
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleFilterMenu = () => setIsFilterMenuOpen(!isFilterMenuOpen);
+
+  const navigateToHome = () => {
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userAccessToken"); 
+    router.push("/login");
+  };
+
+  const navigateToDashboard = () => {
+    router.push("/users/dashboard"); 
+  };
+
+  const isOnUserDashboard = pathname === "/users/dashboard";
+  const isUserLoggedIn = !!localStorage.getItem("userAccessToken");
 
   return (
     <>
@@ -30,50 +50,85 @@ export default function NavbarPage() {
               <p className="text-custom-green font-bold">PDC RYCYCLE</p>
             </div>
           </div>
-          <div className="hidden md:flex items-center space-x-4 hover:bg-white ">
-            <SearchNav
-              isFilterMenuOpen={isFilterMenuOpen}
-              toggleFilterMenu={toggleFilterMenu}
-            />
+          <div className="hidden md:flex items-center space-x-4 hover:bg-white">
+            <SearchNav />
           </div>
-          {!isFilterMenuOpen && (
-            <div className="hidden md:flex items-center space-x-4">
-              <button className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300">
+          <div className="flex justify-center gap-3">
+            <button
+              className="md:hidden bg-custom-green text-white p-2 rounded hover:bg-custom-green/80 transition duration-300"
+              onClick={navigateToHome}
+            >
+              <i className="fa fa-home"></i>
+            </button>
+            {isUserLoggedIn && !isOnUserDashboard && (
+                <button
+                  className="md:hidden bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300"
+                >
+                  <i className="fa fa-user"></i>
+                </button>
+              )}
+            <button
+              className="md:hidden bg-custom-green text-white p-2 rounded hover:bg-custom-green/80 transition duration-300"
+              onClick={toggleMenu}
+            >
+              <i className="fa fa-bars"></i>
+            </button>
+          </div>
+          <div className="hidden md:flex items-center space-x-2">
+            <button
+              className="flex items-center justify-center bg-custom-green text-white p-3 rounded hover:bg-custom-green/80 transition duration-300"
+              onClick={navigateToHome}
+            >
+              <i className="fa fa-home  "></i>
+            </button>
+            {pathname !== "/cart" && <NavCart />}
+            {!isOnUserDashboard && isUserLoggedIn && (
+              <button>
+                <i onClick={navigateToDashboard} className="fa fa-user w-full bg-custom-green text-white p-3 rounded hover:bg-custom-green/80 transition duration-300 "></i>
+              </button>
+            )}
+            {isUserLoggedIn ? (
+              <button
+                className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            ) : (
+              <a
+                href="/login"
+                className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300"
+              >
                 Login/Register
-              </button>
-              <button className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300">
-                <i className="fa fa-shopping-cart"></i>
-              </button>
-            </div>
-          )}
-          <button
-            className="md:hidden flex items-center justify-center bg-custom-green text-white p-2 rounded hover:bg-custom-green/80 transition duration-300"
-            onClick={toggleMenu}
-          >
-            <i className="fa fa-bars"></i>
-          </button>
+              </a>
+            )}
+          </div>
         </div>
 
         {isMenuOpen && (
-          <div className="md:hidden bg-white shadow-md absolute top-full left-0 w-full p-5 ">
-            <SearchNav
-              isFilterMenuOpen={isFilterMenuOpen}
-              toggleFilterMenu={toggleFilterMenu}
-            />
-            <button className="w-full bg-custom-green text-white py-2 rounded mt-2 hover:bg-custom-green/80 transition duration-300">
-              Login/Register
-            </button>
-            <button className="w-full bg-custom-green text-white py-2 rounded mt-2 hover:bg-custom-green/80 transition duration-300">
-              <i className="fa fa-shopping-cart"></i> Cart
-            </button>
-            <div className="grid justify-center">
-              <MenuNav />
+          <div className="md:hidden bg-white shadow-md absolute top-full left-0 w-full p-5 gap-10">
+            <SearchNav />
+            <div className="grid gap-2">
+              {pathname !== "/cart" && <NavCart />}
+          
+              {isUserLoggedIn ? (
+                <button
+                  className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              ) : (
+                <a
+                  href="/login"
+                  className="bg-custom-green text-white px-4 py-2 rounded hover:bg-custom-green/80 transition duration-300"
+                >
+                  Login/Register
+                </a>
+              )}
             </div>
           </div>
         )}
-        <div className="flex justify-center hidden md:flex items-center space-x-4">
-          <MenuNav />
-        </div>
       </div>
     </>
   );

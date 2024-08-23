@@ -12,14 +12,35 @@ class SellerVouchersService:
 
     def create_voucher(self, data, identity):
         try:
+            keys = [
+                "title",
+                "discount_type",
+                "min_purchase_amount",
+                "max_discount_amount",
+                "usage_limit",
+                "start_date",
+                "expiry_date",
+            ]
             start_date = data.get("start_date")
             expiry_date = data.get("expiry_date")
-            tz = data.get("timezone")
+            tz = data.get("timezone", None)
 
             data = self.get_all_data(data)
 
             if not is_filled(**data):
                 raise ValueError("Please fill all required fields")
+
+            for key in keys:
+                if key not in data:
+                    raise ValueError(f"{key} is required")
+
+            if data["discount_type"] == 1 and "percentage" not in data:
+                raise ValueError("Please fill percentage")
+            if data["discount_type"] == 2:
+                data["percentage"] = None
+
+            if not tz:
+                raise ValueError("Please provide timezone")
 
             if identity.get("role") != "seller":
                 raise ValueError("Unauthorized")
@@ -29,12 +50,12 @@ class SellerVouchersService:
             data["start_date"] = change_date(start_date, tz)
             data["expiry_date"] = change_date(expiry_date, tz)
 
-            # if data["start_date"] > data["expiry_date"] or data[
-            #     "start_date"
-            # ] < datetime.now(timezone.utc):
-            #     raise ValueError(
-            #         "Start date must be less than expiry date and greater than current date"
-            #     )
+            if data["start_date"] > data["expiry_date"]:
+                raise ValueError("Start date must be less than expiry date")
+            if data["start_date"] < datetime.now(timezone.utc):
+                raise ValueError(
+                    "Start date must be greater than or equal to current date and time"
+                )
 
             voucher = self.repository.create_voucher(data)
 
@@ -168,3 +189,23 @@ class SellerVouchersService:
             start_date=datetime,
             expiry_date=datetime,
         )
+
+    def get_list_voucher(self, seller_id, req):
+        try:
+            page = req.args.get("page", 1, int)
+            per_page = req.args.get("per_page", 10, int)
+            date = req.args.get("date", "latest")
+
+            list_vouchers = self.repository.list_vouchers(
+                seller_id=seller_id, page=page, per_page=per_page, date=date
+            )
+
+            if not list_vouchers:
+                return [], 200
+
+            return [voucher.to_dict() for voucher in list_vouchers], 200
+
+        except ValueError as e:
+            return {"error": str(e)}, 400
+        except Exception as e:
+            return {"error": str(e)}, 500

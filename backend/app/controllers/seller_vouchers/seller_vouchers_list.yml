@@ -16,8 +16,8 @@ parameters:
       required: false
       schema:
           type: string
-          enum: ["latest", "newest"]
-          example: "latest / newest"
+          enum: ["latest", "oldest"]
+          example: "latest / oldest"
     - name: page
       in: query
       required: false

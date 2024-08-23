@@ -32,6 +32,7 @@ class UserSellerVouchersRepository:
             .filter(
                 self.voucher.user_id == user_id,
                 SellerVouchers.seller_id.in_(seller_ids),
+                SellerVouchers.expiry_date >= datetime.now(timezone.utc),
             )
             .all()
         )

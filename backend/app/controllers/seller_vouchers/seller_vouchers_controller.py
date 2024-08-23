@@ -49,3 +49,10 @@ def voucher_update(voucher_id):
 def voucher_delete(voucher_id):
     identity = get_jwt_identity()
     return service.delete_voucher(voucher_id, identity)
+
+
+@seller_vouchers_blueprint.route("/publiclist/<int:seller_id>", methods=["GET"])
+@swag_from("./seller_vouchers_publiclist.yml")
+def voucher_public_list(seller_id):
+    req = request
+    return service.get_list_voucher(seller_id=seller_id, req=req)

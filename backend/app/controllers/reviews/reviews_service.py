@@ -1,49 +1,47 @@
 from .reviews_repository import ReviewsRepository
 from app.db import db
-from ..common import is_filled, get_data_and_validate
-from ..products.products_repository import ProductsRepository
 
 
 class ReviewsService:
     def __init__(self, db=db, repository=None, product_repository=None):
         self.db = db
         self.repository = repository or ReviewsRepository()
-        self.product_repository = product_repository or ProductsRepository()
 
-    def create_review(self, data, product_id):
+    def create_review(
+        self, product_id, rating, seller_id, user_id, transaction_id, review
+    ):
         try:
-            review = get_data_and_validate(
-                data, review=str, rating=float, user_id=int, role=str
+            if rating < 1 or rating > 5:
+                raise ValueError("Rating must be between 1 and 5")
+
+            if not seller_id or not user_id:
+                raise ValueError("Seller and user id required")
+
+            if not product_id or not transaction_id:
+                raise ValueError("Product and transaction id required")
+
+            old_review = self.repository.get_review(
+                transaction_id=transaction_id, product_id=product_id, user_id=user_id
             )
 
-            if not is_filled(**review):
-                raise ValueError("Please fill all required fields")
+            if old_review:
+                raise ValueError("Product has been reviewed")
 
-            if review["role"] == "seller":
-                raise ValueError("Seller cannot leave a review")
-
-            # check apakah 'user id' melakukan transaksi dengan 'transaction id'
-
-            product = self.product_repository.get_product_by_id(
-                role=review["role"], product_id=product_id
+            new_review = self.repository.create_review(
+                {
+                    "product_id": product_id,
+                    "rating": rating,
+                    "seller_id": seller_id,
+                    "user_id": user_id,
+                    "transaction_id": transaction_id,
+                    "review": review,
+                }
             )
 
-            if product is None:
-                raise ValueError("Product not found")
+            self.db.session.add(new_review)
 
-            product = product.to_dict()
-            review["product_id"] = product_id
-            review["seller_id"] = product["seller_id"]
-
-            review = self.repository.create_review(**review)
-
-            self.db.session.add(review)
-            self.db.session.commit()
-
-            return {"message": "Review created successfully"}, 200
+            return {"message": "Review created successfully"}, 201
         except ValueError as e:
-            self.db.session.rollback()
             return {"error": str(e)}, 400
         except Exception as e:
-            self.db.session.rollback()
             return {"error": str(e)}, 500

@@ -3,7 +3,7 @@ import pytz
 
 from .carts_repository import CartsRepository
 from app.db import mongo
-from ..products.products_repository import ProductsRepository
+from ..products.product_services_user import ProductServicesUser
 from ..users.users_repository import UserRepository
 
 
@@ -11,12 +11,12 @@ class CartsService:
     def __init__(
         self,
         repository=None,
-        product_repository=None,
+        product_service_user=None,
         user_repository=None,
     ):
         self.mongo = mongo
         self.repository = repository or CartsRepository()
-        self.product_repository = product_repository or ProductsRepository()
+        self.product_service_user = product_service_user or ProductServicesUser()
         self.user_repository = user_repository or UserRepository()
 
     def list_cart(self, user_id):
@@ -34,18 +34,25 @@ class CartsService:
             items_with_price = {"items": [], "total_price": 0}
 
             for item in cart["items"]:
-                product_detail = self.product_repository.get_product_by_id(
-                    role="user", product_id=item["product_id"]
+                product_detail, status_code = (
+                    self.product_service_user.get_product_by_id(
+                        product_id=item["product_id"]
+                    )
                 )
 
-                if not product_detail:
+                if status_code != 200:
                     raise ValueError(f"Product {item['product_id']} not found")
 
-                sub_total = product_detail.price * item["quantity"]
+                sub_total = product_detail["price"] * item["quantity"]
+
+                if product_detail["image_url"]:
+                    product_detail["image_url"] = product_detail["image_url"][0][
+                        "image_secure_url"
+                    ]
 
                 items_with_price["items"].append(
                     {
-                        "detail_product": product_detail.to_cart(),
+                        "detail_product": product_detail,
                         "quantity": item["quantity"],
                         "sub_total": sub_total,
                     }
@@ -69,13 +76,11 @@ class CartsService:
             user_cart = self.repository.find_cart_by_user_id(user_id)
 
             for item in items:
-                if item["quantity"] <= 0:
-                    raise ValueError("Quantity must be greater than 0")
-
-            for item in items:
                 if user_cart:
                     # check is product exist in products table, if not raise error
-                    self.check_product(product_id=item["product_id"])
+                    self.check_product(
+                        product_id=item["product_id"], quantity=item["quantity"]
+                    )
 
                     # check if user already have specific product in cart
                     is_exist = self.repository.find_one(
@@ -93,7 +98,9 @@ class CartsService:
 
                         self.repository.update_new(user_id=user_id, items=item)
                 else:
-                    self.check_product(product_id=item["product_id"])
+                    self.check_product(
+                        product_id=item["product_id"], quantity=item["quantity"]
+                    )
                     item["added_to_cart"] = str(datetime.now(pytz.UTC))
 
                     user_cart = True
@@ -101,6 +108,7 @@ class CartsService:
                     self.repository.insert_cart(user_id, item)
 
             return {"message": "Cart created/updated successfully"}, 200
+
         except ValueError as e:
             return {"error": str(e)}, 400
         except Exception as e:
@@ -125,12 +133,18 @@ class CartsService:
         except Exception as e:
             return {"error": str(e)}, 500
 
-    def check_product(self, product_id):
-        product = self.product_repository.get_product_by_id(
-            role="user", product_id=product_id
+    def check_product(self, product_id, quantity):
+        product, status_code = self.product_service_user.get_product_by_id(
+            product_id=product_id
         )
 
-        if not product:
+        if status_code != 200:
             raise ValueError("Product not found")
+
+        if quantity <= 0:
+            raise ValueError("Quantity must be greater than 0")
+
+        if product["stock"] < quantity:
+            raise ValueError(f"Insufficient quantity for product with id: {product_id}")
 
         return product

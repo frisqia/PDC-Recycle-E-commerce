@@ -1,7 +1,7 @@
 export default function SosialMedia() {
   return (
     <>
-      <div className="bg-white p-10 text-white ">
+      <div className="bg-white text-white ">
         <div className="grid justify-center text-center bg-custom-steel-blue p-10 rounded-lg  ">
           <h1 className="text-4xl">Our Social Media</h1>
           <p>
@@ -10,27 +10,27 @@ export default function SosialMedia() {
           </p>
           <div className=" grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-6 p-5">
             <a
-              href="#"
+              href="https://web.facebook.com/revoU.co/"
               className="fa fa-facebook p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
             <a
-              href="#"
+              href="https://x.com/revoudotco"
               className="fa fa-twitter p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
             <a
-              href="#"
+              href="https://revou.co/"
               className="fa fa-google p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
             <a
-              href="#"
+              href="https://www.linkedin.com/school/revou/"
               className="fa fa-linkedin p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
             <a
-              href="#"
+              href="https://www.youtube.com/@revoudotco"
               className="fa fa-youtube p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
             <a
-              href="#"
+              href="https://www.instagram.com/revou_id/"
               className="fa fa-instagram p-7 text-white border border-white border-4 rounded-full transition-transform duration-500 hover:scale-105"
             ></a>
           </div>

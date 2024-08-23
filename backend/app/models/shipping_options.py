@@ -12,8 +12,12 @@ class ShippingOptions(db.Model):
     shipment_id = Column(Integer, ForeignKey("shipments.id"), nullable=False)
     seller_id = Column(Integer, ForeignKey("sellers.id"), nullable=False)
     is_active = Column(Integer, default=False, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(pytz.UTC))
-    updated_at = Column(DateTime, nullable=True, onupdate=datetime.now(pytz.UTC))
+    created_at = Column(
+        DateTime, nullable=False, default=lambda: datetime.now(pytz.UTC)
+    )
+    updated_at = Column(
+        DateTime, nullable=True, onupdate=lambda: datetime.now(pytz.UTC)
+    )
 
     def __init__(self, shipment_id, seller_id, is_active):
         self.shipment_id = shipment_id
@@ -24,7 +28,7 @@ class ShippingOptions(db.Model):
         return {
             "id": self.id,
             "shipment_id": self.shipment_id,
-            "shipment": self.shipment.vendor_name,
+            "shipment": self.shipment_options.vendor_name,
             "seller_id": self.seller_id,
             "is_active": self.is_active,
         }

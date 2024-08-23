@@ -24,8 +24,10 @@ parameters:
                   type: string
                   example: Jual bahan pangan
               store_image_url:
-                  type: string
-                  example: https://image.com
+                  type: array
+                  items:
+                      type: string
+                      example: "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8PDw8QDw8QEBAQEBAPFRAPDxUPDxUVFRUWFhYVFR..."
 responses:
     200:
         description: Store updated successfully
@@ -38,13 +40,7 @@ responses:
                 key_updated:
                     type: array
                     example:
-                        [
-                            "store_name",
-                            "store_description",
-                            "store_address",
-                            "store_subdistrict",
-                            "store_image_url",
-                        ]
+                        ["store_name", "store_description", "store_image_url"]
     400:
         description: Incorrect user input
         schema:
