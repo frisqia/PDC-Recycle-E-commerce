@@ -32,7 +32,6 @@ class ShipmentService:
           "user_selected_address_id" : 2,
           "total_weight" : 2}
         """
-
         try:
             seller_id = data.get("seller_id")
             user_selected_address_id = data.get("user_selected_address_id")
