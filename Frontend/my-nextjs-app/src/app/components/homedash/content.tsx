@@ -34,7 +34,7 @@ export default function CatalogDashboard() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [productsToShow, setProductsToShow] = useState(12);
+  const [productsToShow, setProductsToShow] = useState(8);
   const [showAllProducts, setShowAllProducts] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
